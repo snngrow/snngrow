@@ -9,8 +9,8 @@ import sphinx_rtd_theme
 from recommonmark.parser import CommonMarkParser
 
 project = 'snngrow'
-copyright = '2024, utarn'
-author = 'utarn'
+copyright = '2024, Utarn Technology Co., Ltd.'
+author = 'Utarn Technology Co., Ltd.'
 release = '0.1.0'
 
 # -- General configuration ---------------------------------------------------
