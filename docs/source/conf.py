@@ -10,7 +10,7 @@ from recommonmark.parser import CommonMarkParser
 
 project = 'snngrow'
 copyright = '2024, Utarn Technology Co., Ltd.'
-author = 'Utarn Technology Co., Ltd.'
+author = 'Lei Yunlin, Gao Lanyu, Yang Xu'
 release = '0.1.0'
 
 # -- General configuration ---------------------------------------------------
