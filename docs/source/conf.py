@@ -5,6 +5,11 @@
 
 # -- Project information -----------------------------------------------------
 # https://www.sphinx-doc.org/en/master/usage/configuration.html#project-information
+
+import sys
+import os
+sys.path.insert(0, os.path.abspath('../../'))
+
 import sphinx_rtd_theme
 from recommonmark.parser import CommonMarkParser
 
@@ -16,10 +21,14 @@ release = '0.1.0'
 # -- General configuration ---------------------------------------------------
 # https://www.sphinx-doc.org/en/master/usage/configuration.html#general-configuration
 
-extensions = []
+extensions = ['sphinx.ext.autodoc']
 
 templates_path = ['_templates']
 exclude_patterns = []
+
+# -- Options for LaTeX output -------------------------------------------------
+latex_engine = 'xelatex'
+latex_elements = {'preamble':r'\usepackage{physics}'}
 
 language = 'zh_CN'
 

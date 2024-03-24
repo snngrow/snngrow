@@ -24,6 +24,7 @@
 
    /apis/neurons
    /apis/surrogate
+   /apis/utils
 
 
 Indices and tables
