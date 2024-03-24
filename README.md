@@ -13,10 +13,64 @@ SNNGrow的愿景是解码人类智能及其进化机制，并为未来人与人�
 ## 安装
 
 在终端中运行以下命令来安装项目：
+从PyPI上安装最新版本：
+```
+pip install snngrow
+```
+从GitHub上安装：
+```
+git clone https://github.com/snngrow/snngrow.git
+cd snngrow
+python setup.py install
+```
+
+Run the following command in your terminal to install the project:
+Install the latest version from PyPI:
+```
+pip install snngrow
+```
+Install from GitHub:
+```
+git clone https://github.com/snngrow/snngrow.git
+cd snngrow
+python setup.py install
+```
 
 ## 快速上手
 
 SNNGrow的代码风格和Pytorch保持一致
+您可以使用简单的代码构建脉冲神经网络
+```
+from snngrow.base.neuron import LIFNode
+from snngrow.base.neuron import IFNode
+import torch
+
+lifnode = LIFNode.LIFNode()
+ifnode = IFNode.IFNode()
+
+x = torch.randn(2, 3, 4, 5)
+y = torch.randn(6, 7, 8, 9)
+
+x_lif = lifnode(x)
+y_lif = lifnode(y)
+```
+
+The code style of SNNGrow is consistent with Pytorch
+You can build spiking neural networks with simple code:
+```
+from snngrow.base.neuron import LIFNode
+from snngrow.base.neuron import IFNode
+import torch
+
+lifnode = LIFNode.LIFNode()
+ifnode = IFNode.IFNode()
+
+x = torch.randn(2, 3, 4, 5)
+y = torch.randn(6, 7, 8, 9)
+
+x_lif = lifnode(x)
+y_lif = lifnode(y)
+```
 
 ## 开发计划
 

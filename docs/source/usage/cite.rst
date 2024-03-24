@@ -1,3 +1,4 @@
+=======
 Cite
 -----
 如果您在自己工作中使用了SNNGrow，请您考虑用如下格式引用：
@@ -11,3 +12,4 @@ Cite
     howpublished = {\url{https://github.com/snngrow/snngrow}},
 }
 ```
+>>>>>>> main

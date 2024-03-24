@@ -21,6 +21,58 @@ class LIFNode(BaseNode.BaseNode):
     def __init__(self, tau: float = 2., decay_input: bool = True, v_threshold: float = 1.,
                  v_reset: float = 0., surrogate_function: Callable = Sigmoid.Sigmoid(),
                  detach_reset: bool = False):
+        """
+        * :ref:`中文API <LIFNode.__init__-cn>`
+
+        .. _LIFNode.__init__-cn:
+
+        :param tau: 膜电位时间常数
+        :type tau: float
+
+        :param decay_input: 输入参与衰减
+        :type decay_input: bool
+
+        :param v_threshold: 阈值电压
+        :type v_threshold: float
+
+        :param v_reset: 重置电压。如果不为 ``None``，输出脉冲后，电压重置为 ``v_reset``；
+            如果为 ``None``，输出脉冲后，重置值为电压减去 ``v_threshold``
+        :type v_reset: float
+
+        :param surrogate_function: 反向传播过程中计算梯度的替代函数
+        :type surrogate_function: Callable
+
+        :param detach_reset: reset过程的计算图分离
+        :type detach_reset: bool
+
+        Leaky Integrate-and-Fire（LIF） 神经元
+
+        * :ref:`API in English <LIFNode.__init__-en>`
+
+        .. _LIFNode.__init__-en:
+
+        :param tau: membrane time constant
+        :type tau: float
+
+        :param decay_input: the input will decay
+        :type decay_input: bool
+
+        :param v_threshold: threshold voltage
+        :type v_threshold: float
+
+        :param v_reset: reset voltage. If not ``None``, the neuron's voltage will be set to ``v_reset``
+            after firing a spike. If ``None``, the neuron's voltage will subtract ``v_threshold`` after firing a spike
+        :type v_reset: float
+
+        :param surrogate_function: the function for calculating surrogate gradients of the heaviside step function in backward
+        :type surrogate_function: Callable
+
+        :param detach_reset: detach the computation graph of reset in backward
+        :type detach_reset: bool
+
+        The Leaky Integrate-and-Fire(LIF) neuron
+
+        """
         
         assert isinstance(tau, float) and tau > 1.
 
@@ -46,31 +98,26 @@ class LIFNode(BaseNode.BaseNode):
                 self.v = self.neuronal_charge_no_decay_input(x, self.v, self.v_reset, self.tau)
 
     @staticmethod
-    #@torch.jit.script
     def neuronal_charge_decay_input_reset0(x: torch.Tensor, v: torch.Tensor, tau: float):
         v = v + (x - v) / tau
         return v
 
     @staticmethod
-    #@torch.jit.script
     def neuronal_charge_decay_input(x: torch.Tensor, v: torch.Tensor, v_reset: float, tau: float):
         v = v + (x - (v - v_reset)) / tau
         return v
 
     @staticmethod
-    #@torch.jit.script
     def neuronal_charge_no_decay_input_reset0(x: torch.Tensor, v: torch.Tensor, tau: float):
         v = v * (1. - 1. / tau) + x
         return v
 
     @staticmethod
-    #@torch.jit.script
     def neuronal_charge_no_decay_input(x: torch.Tensor, v: torch.Tensor, v_reset: float, tau: float):
         v = v - (v - v_reset) / tau + x
         return v
 
     @staticmethod
-    #@torch.jit.script
     def eval_forward_hard_reset_decay_input(x: torch.Tensor, v: torch.Tensor, v_threshold: float,
                                                             v_reset: float, tau: float):
         v = v + (x - (v - v_reset)) / tau
@@ -79,7 +126,6 @@ class LIFNode(BaseNode.BaseNode):
         return spike, v
 
     @staticmethod
-    #@torch.jit.script
     def eval_forward_hard_reset_no_decay_input(x: torch.Tensor, v: torch.Tensor, v_threshold: float,
                                                                v_reset: float, tau: float):
         v = v - (v - v_reset) / tau + x
@@ -88,7 +134,6 @@ class LIFNode(BaseNode.BaseNode):
         return spike, v
 
     @staticmethod
-    #@torch.jit.script
     def eval_forward_soft_reset_decay_input(x: torch.Tensor, v: torch.Tensor, v_threshold: float,
                                                             tau: float):
         v = v + (x - v) / tau
@@ -97,7 +142,6 @@ class LIFNode(BaseNode.BaseNode):
         return spike, v
 
     @staticmethod
-    #@torch.jit.script
     def eval_forward_soft_reset_no_decay_input(x: torch.Tensor, v: torch.Tensor, v_threshold: float,
                                                                tau: float):
         v = v * (1. - 1. / tau) + x
