@@ -95,4 +95,4 @@ SNNGrow仍在持续开发中：
 ```
 ## 项目信息
 
-北京市优智创芯有限公司和北京理工大学[AETAS实验室](https://www.aetasbit.com/)是本项目的主要开发者。
+[北京市优智创芯有限公司](https://www.utarn.com/w/home)和北京理工大学[AETAS实验室](https://www.aetasbit.com/)是本项目的主要开发者。
