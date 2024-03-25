@@ -18,7 +18,6 @@ import torch.optim as optim
 import torchvision
 import torchvision.transforms as transforms
 from snngrow.base.neuron.LIFNode import LIFNode
-from snngrow.base.functional.parallel_acceleration import ParallelAcceleration
 from tqdm import tqdm
 
 # Define the CSNN model
@@ -28,15 +27,14 @@ class CNN(nn.Module):
         self.T = T
         self.csnn = nn.Sequential(
             nn.Conv2d(1, 32, kernel_size=3),
-            LIFNode(),
+            LIFNode(parallel_optim=True, T=T),
             nn.MaxPool2d(kernel_size=2),
             nn.Conv2d(32, 64, kernel_size=3),
-            LIFNode(),
+            LIFNode(parallel_optim=True, T=T),
             nn.Flatten(),
             nn.Linear(7744, 128),
             nn.Linear(128, 10)
         )
-        self.csnn = ParallelAcceleration(self.csnn)
 
     def forward(self, x):
         # # don't use parallel acceleration
@@ -48,6 +46,7 @@ class CNN(nn.Module):
     
         # use parallel acceleration
         x = x.unsqueeze(0).repeat(self.T, 1, 1, 1, 1)  # [N, C, H, W] -> [T, N, C, H, W]
+        x = x.view(-1, x.size(2), x.size(3), x.size(4))  # [T, N, C, H, W] -> [T * N, C, H, W]
         x = self.csnn(x)
         return x.mean(0)
 

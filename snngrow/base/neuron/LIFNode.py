@@ -20,11 +20,11 @@ import torch
 class LIFNode(BaseNode.BaseNode):
     def __init__(self, tau: float = 2., decay_input: bool = True, v_threshold: float = 1.,
                  v_reset: float = 0., surrogate_function: Callable = Sigmoid.Sigmoid(),
-                 detach_reset: bool = False):
+                 detach_reset: bool = False, parallel_optim: bool = False, T: int = 1):
         
         assert isinstance(tau, float) and tau > 1.
 
-        super().__init__(v_threshold, v_reset, surrogate_function, detach_reset)
+        super().__init__(v_threshold, v_reset, surrogate_function, detach_reset, T)
 
         self.tau = tau
         self.decay_input = decay_input

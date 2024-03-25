@@ -23,12 +23,13 @@ from ..surrogate import Sigmoid
 class BaseNode(nn.Module):
     def __init__(self, v_threshold: float = 1., v_reset: float = 0.,
                  surrogate_function: Callable = Sigmoid.Sigmoid(), detach_reset: bool = False,
-                 parallel_optim: bool = True,):
+                 parallel_optim: bool = False, T: int = 1):
 
         assert isinstance(v_reset, float) or v_reset is None
         assert isinstance(v_threshold, float)
         assert isinstance(detach_reset, bool)
         assert isinstance(parallel_optim, bool)
+        assert isinstance(T, int)
         super().__init__()
 
         self._memories = {}
@@ -100,7 +101,9 @@ class BaseNode(nn.Module):
             self.v = torch.full_like(x.data, v_init)
 
     def parallel_optim_forward(self, x_seq: torch.Tensor, *args, **kwargs):
-        T = x_seq.shape[0]
+        x_shape = x_seq.shape
+        batch_size = x_shape[0] // self.T
+        x_seq = x_seq.view(self.T, batch_size, *x_shape[1:])
         y_seq = []
         for t in range(T):
             y = self.simple_forward(x_seq[t], *args, **kwargs)
