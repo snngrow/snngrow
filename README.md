@@ -2,87 +2,67 @@
 
 <p align="center">
   	<img alt="SNNGrow" src="./docs/source/_static/logo.png" width=50%>
-</p> 
-SNNGrow是一款低能耗大规模脉冲神经网络训练和运行框架，在保持低能耗的同时，提供大规模SNN优异的学习能力，从而以高效率模拟生物体的认知大脑。
+</p>
+English | [中文(Chinese)](./README_zh_CN.md) 
 
-SNNGrow的愿景是解码人类智能及其进化机制，并为未来人与人工智能共生社会中研制受脑启发的的智能体提供支持。
+SNNGrow is a low-power, large-scale spiking neural network training and inference framework. It preserves minimal energy cosumption while providing the superior learning abilities of large spiking neural network.
 
-- **[文档](https://snngrow.readthedocs.io/)**
-- **[代码](https://github.com/snngrow/snngrow/)**
+The vision of SNNGrow is to decode human intelligence and the mechanisms of its evolution, and to provide support for the development of brain-inspired intelligent agents in a future society where humans coexist with artificial intelligence.
 
-## 安装
+- **[Documentation](https://snngrow.readthedocs.io/)**
+- **[Source](https://github.com/snngrow/snngrow/)**
 
-在终端中运行以下命令来安装项目：
-从PyPI上安装最新版本：
+## Install
+
+SNNGrow offers two installation methods.
+Running the following command in your terminal will install the project:
+### Install from PyPI:
+
 ```
 pip install snngrow
 ```
-从GitHub上安装：
+### Install from GitHub:
+
+1.  Download or clone SNNGrow from github
 ```
 git clone https://github.com/snngrow/snngrow.git
+```
+2.  Enter the folder of SNNGrow and install braincog locally with setuptools
+```
 cd snngrow
 python setup.py install
 ```
 
-Run the following command in your terminal to install the project:
-Install the latest version from PyPI:
-```
-pip install snngrow
-```
-Install from GitHub:
-```
-git clone https://github.com/snngrow/snngrow.git
-cd snngrow
-python setup.py install
-```
+## Quickstart
 
-## 快速上手
-
-SNNGrow的代码风格和Pytorch保持一致
-您可以使用简单的代码构建脉冲神经网络
+The code style of SNNGrow is consistent with Pytorch, allowing you to build spiking neural networks with simple code:
 ```
 from snngrow.base.neuron import LIFNode
-from snngrow.base.neuron import IFNode
 import torch
 
-lifnode = LIFNode.LIFNode()
-ifnode = IFNode.IFNode()
+x = torch.randn(2, 3, 5, 5)
 
-x = torch.randn(2, 3, 4, 5)
-y = torch.randn(6, 7, 8, 9)
+net = torch.nn.Sequential(
+    nn.Conv2d(1, 32, kernel_size=3),
+    LIFNode(),
+    nn.Flatten(),
+    nn.Linear(54, 1)
+)
 
-x_lif = lifnode(x)
-y_lif = lifnode(y)
+y = net(x)
 ```
 
-The code style of SNNGrow is consistent with Pytorch
-You can build spiking neural networks with simple code:
-```
-from snngrow.base.neuron import LIFNode
-from snngrow.base.neuron import IFNode
-import torch
+## Development plans
 
-lifnode = LIFNode.LIFNode()
-ifnode = IFNode.IFNode()
+SNNGrow is still under active development:
+- [x] Large-scale deep spiking neural network training and inference
+- [ ] Ultra-low energy consumption sparse spiking neural network computing
+- [ ] Brain-inspired learning algorithm support
+- [ ] Bionic neural network sparse structure support
 
-x = torch.randn(2, 3, 4, 5)
-y = torch.randn(6, 7, 8, 9)
+## Cite
 
-x_lif = lifnode(x)
-y_lif = lifnode(y)
-```
-
-## 开发计划
-
-SNNGrow仍在持续开发中：
-- [x] 深度脉冲神经网络支持
-- [ ] 超低能耗稀疏脉冲神经网络计算
-- [ ] 脑启发学习算法支持
-- [ ] 仿生结构支持
-
-## 引用
-
-如果您在自己工作中使用了SNNGrow，请您考虑用如下格式引用：
+If you are using SNNGrow, please consider citing it as follows:
 ```
 @misc{SNNGrow,
     title = {SNNGrow},
@@ -93,6 +73,7 @@ SNNGrow仍在持续开发中：
     howpublished = {\url{https://github.com/snngrow/snngrow}},
 }
 ```
-## 项目信息
 
-[北京市优智创芯有限公司](https://www.utarn.com/w/home)和北京理工大学[AETAS实验室](https://www.aetasbit.com/)是本项目的主要开发者。
+## About
+
+[Utarn Technology Co., Ltd.](https://www.utarn.com/w/home)and [Beijing Institute of Technology AETAS Laboratory](https://www.aetasbit.com/)are the main developers of SNNGrow.
