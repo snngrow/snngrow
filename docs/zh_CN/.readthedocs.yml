@@ -12,7 +12,7 @@ build:
 
 # Build documentation in the docs/ directory with Sphinx
 sphinx:
-  configuration: zh_CN/source/conf.py
+  configuration: source/conf.py
 
 # Build documentation with MkDocs
 #mkdocs:
@@ -24,4 +24,4 @@ formats: all
 # Optionally set the version of Python and requirements required to build your docs
 python:
   install:
-    - requirements: zh_CN/requirements.txt
+    - requirements: requirements.txt
