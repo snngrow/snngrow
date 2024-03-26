@@ -18,48 +18,25 @@ from typing import Callable
 import torch
 
 class IFNode(BaseNode.BaseNode):
+    """
+    :param v_threshold: threshold voltage
+    :type v_threshold: float
+
+    :param v_reset: reset voltage. If not ``None``, the neuron's voltage will be set to ``v_reset``
+        after firing a spike. If ``None``, the neuron's voltage will subtract ``v_threshold`` after firing a spike
+    :type v_reset: float
+
+    :param surrogate_function: the function for calculating surrogate gradients of the heaviside step function in backward
+    :type surrogate_function: Callable
+
+    :param detach_reset: detach the computation graph of reset in backward
+    :type detach_reset: bool
+
+    The Integrate-and-Fire(IF) neuron, without decay input as LIF neuron.
+    
+    """
     def __init__(self, v_threshold: float = 1., v_reset: float = 0.,
                  surrogate_function: Callable = Sigmoid.Sigmoid(), detach_reset: bool = False):
-        """
-        * :ref:`中文API <IFNode.__init__-cn>`
-
-        .. _IFNode.__init__-cn:
-
-        :param v_threshold: 阈值电压
-        :type v_threshold: float
-
-        :param v_reset: 重置电压。如果不为 ``None``，输出脉冲后，电压重置为 ``v_reset``；
-            如果为 ``None``，输出脉冲后，重置值为电压减去 ``v_threshold``
-        :type v_reset: float
-
-        :param surrogate_function: 反向传播过程中计算梯度的替代函数
-        :type surrogate_function: Callable
-
-        :param detach_reset: reset过程的计算图分离
-        :type detach_reset: bool
-
-        Integrate-and-Fire（IF） 神经元,没有LIF神经元的输入衰减
-
-        * :ref:`API in English <IFNode.__init__-en>`
-
-        .. _IFNode.__init__-en:
-
-        :param v_threshold: threshold voltage
-        :type v_threshold: float
-
-        :param v_reset: reset voltage. If not ``None``, the neuron's voltage will be set to ``v_reset``
-            after firing a spike. If ``None``, the neuron's voltage will subtract ``v_threshold`` after firing a spike
-        :type v_reset: float
-
-        :param surrogate_function: the function for calculating surrogate gradients of the heaviside step function in backward
-        :type surrogate_function: Callable
-
-        :param detach_reset: detach the computation graph of reset in backward
-        :type detach_reset: bool
-
-        The Integrate-and-Fire(IF) neuron, without decay input as LIF neuron.
-        
-        """
 
         super().__init__(v_threshold, v_reset, surrogate_function, detach_reset)
 

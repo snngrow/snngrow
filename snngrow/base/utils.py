@@ -18,20 +18,6 @@ from .neuron import BaseNode
 
 def reset(net: nn.Module):
     """
-    * :ref:`中文API <reset-cn>`
-
-    .. _reset-cn:
-
-    :param net: 任何基于 ``nn.Module`` 子类构建的网络
-
-    :return: None
-
-    重置网络中神经元状态
-
-    * :ref:`API in English <reset-en>`
-
-    .. _reset-en:
-
     :param net: Any network inherits from ``nn.Module``
 
     :return: None

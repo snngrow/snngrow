@@ -16,17 +16,6 @@ import torch
 import torch.nn as nn
 def heaviside(x: torch.Tensor):
     '''
-    * :ref:`中文API <heaviside.__init__-cn>`
-    .. _heaviside.__init__-cn:
-
-    :param x: 输入tensor
-    :return: 输出tensor
-
-    heaviside阶跃函数
-
-    * :ref:`API in English <heaviside.__init__-en>`
-    .. _heaviside.__init__-en:
-
     :param x: the input tensor
     :return: the output tensor
 
@@ -38,28 +27,16 @@ def heaviside(x: torch.Tensor):
 
 
 class SurrogateFunctionBase(nn.Module):
+    '''
+    :param alpha: parameter to control smoothness of gradient
+    :param spiking: output spikes. The default is ``True`` which means that using ``heaviside`` in forward
+        propagation and using surrogate gradient in backward propagation. If ``False``, in forward propagation,
+        using the primitive function of the surrogate gradient function used in backward propagation
+
+    The base class of surrogate spiking function.
+
+    '''
     def __init__(self, alpha, spiking=True):
-        '''
-        * :ref:`中文API <SurrogateFunctionBase.__init__-cn>`
-        .. _SurrogateFunctionBase.__init__-cn:
-
-        :param alpha: 控制梯度平滑程度的参数
-        :param spiking: 输出脉冲，默认为 ``True``，在前向传播时使用 ``heaviside`` 而在反向传播使用替代梯度。若为 ``False``
-            则不使用替代梯度，前向传播时，使用反向传播时的梯度替代函数对应的原函数
-
-        反向传播时的梯度替代函数基类。
-        
-        * :ref:`API in English <SurrogateFunctionBase.__init__-en>`
-        .. _SurrogateFunctionBase.__init__-en:
-
-        :param alpha: parameter to control smoothness of gradient
-        :param spiking: output spikes. The default is ``True`` which means that using ``heaviside`` in forward
-            propagation and using surrogate gradient in backward propagation. If ``False``, in forward propagation,
-            using the primitive function of the surrogate gradient function used in backward propagation
-
-        The base class of surrogate spiking function.
-
-        '''
         super().__init__()
         self.spiking = spiking
         self.alpha = alpha
