@@ -1,0 +1,9 @@
+numpy
+torch
+torchvision
+torchaudio
+
+sphinx_rtd_theme>=0.5.0
+sphinx>=3.2.1
+sphinx-intl
+recommonmark
