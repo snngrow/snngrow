@@ -3,7 +3,9 @@
 <p align="center">
   	<img alt="SNNGrow" src="./docs/source/_static/logo.png" width=50%>
 </p> 
+
 [English](./README.md) | 中文(Chinese)
+
 SNNGrow是一款低能耗大规模脉冲神经网络训练和运行框架，在保持低能耗的同时，提供大规模SNN优异的学习能力，从而以高效率模拟生物体的认知大脑。
 
 SNNGrow的愿景是解码人类智能及其进化机制，并为未来人与 人工智能共生社会中研制受脑启发的的智能体提供支持。

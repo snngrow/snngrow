@@ -3,6 +3,7 @@
 <p align="center">
   	<img alt="SNNGrow" src="./docs/source/_static/logo.png" width=50%>
 </p>
+
 English | [中文(Chinese)](./README_zh_CN.md) 
 
 SNNGrow is a low-power, large-scale spiking neural network training and inference framework. It preserves minimal energy cosumption while providing the superior learning abilities of large spiking neural network.
