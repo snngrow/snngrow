@@ -6,16 +6,18 @@
 欢迎来到SNNGrow的文档！
 ------------------------------------
 
+`English <https://snngrow.readthedocs.io/en/>`_ | 简体中文
+
 .. toctree::
    :maxdepth: 2
    :caption: 使用说明:
 
-   /usage/安装
-   /usage/快速上手
-   /usage/教程
-   /usage/例子
-   /usage/引用
-   /usage/开源协议
+   /usage/install
+   /usage/quickstart
+   /usage/tutorials
+   /usage/examples
+   /usage/cite
+   /usage/license
 
 
 .. toctree::

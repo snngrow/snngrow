@@ -6,6 +6,8 @@
 Welcome to SNNGrow's documentation!
 ------------------------------------
 
+English | `简体中文 <https://snngrow.readthedocs.io/zh-cn/>`_
+
 .. toctree::
    :maxdepth: 2
    :caption: USAGE:
