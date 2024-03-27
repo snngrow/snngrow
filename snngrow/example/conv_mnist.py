@@ -17,8 +17,12 @@ import torch.nn as nn
 import torch.optim as optim
 import torchvision
 import torchvision.transforms as transforms
+
+import os
+import sys
+sys.path.append(os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))))
 from snngrow.base.neuron.LIFNode import LIFNode
-from snngrow.base.functional.parallel_acceleration import ParallelAcceleration
+from snngrow.base import utils
 from tqdm import tqdm
 
 # Define the CSNN model
@@ -28,28 +32,29 @@ class CNN(nn.Module):
         self.T = T
         self.csnn = nn.Sequential(
             nn.Conv2d(1, 32, kernel_size=3),
-            LIFNode(),
-            nn.MaxPool2d(kernel_size=2),
+            LIFNode(parallel_optim=False, T=T),
+            nn.MaxPool2d(kernel_size=1),
             nn.Conv2d(32, 64, kernel_size=3),
-            LIFNode(),
+            LIFNode(parallel_optim=False, T=T),
             nn.Flatten(),
-            nn.Linear(7744, 128),
+            nn.Linear(36864, 128),
             nn.Linear(128, 10)
         )
-        self.csnn = ParallelAcceleration(self.csnn)
+
 
     def forward(self, x):
         # # don't use parallel acceleration
-        # x_seq = []
-        # for _ in range(self.T):
-        #     x_seq.append(self.csnn(x))
-        # out = torch.stack(x_seq).mean(0)
-        # return out
+        x_seq = []
+        for _ in range(self.T):
+            x_seq.append(self.csnn(x))
+        out = torch.stack(x_seq).mean(0)
+        return out
     
         # use parallel acceleration
-        x = x.unsqueeze(0).repeat(self.T, 1, 1, 1, 1)  # [N, C, H, W] -> [T, N, C, H, W]
-        x = self.csnn(x)
-        return x.mean(0)
+        #x = x.unsqueeze(0).repeat(self.T, 1, 1, 1, 1)  # [N, C, H, W] -> [T, N, C, H, W]
+        #x = x.flatten(0, 1).contiguous()  # [T, N, C, H, W] -> [T * N, C, H, W]
+        #x = self.csnn(x)
+        #return x.view(self.T, int(x.size(0) /self.T), x.size(1)).mean(0)    # [T*Nin, Nout] -> [Nin, Nout]
 
 def main():
     # Load the MNIST dataset
@@ -89,9 +94,7 @@ def main():
             optimizer.step()
 
             running_loss += loss.item()
-            for m in model.modules():
-                if hasattr(m, 'reset'):
-                    m.reset()
+            utils.reset(model)
 
         # Test the model
         correct = 0
@@ -104,9 +107,7 @@ def main():
                 _, predicted = torch.max(outputs.detach().cpu().data, 1)
                 total += labels.size(0)
                 correct += (predicted == labels).sum().item()
-                for m in model.modules():
-                    if hasattr(m, 'reset'):
-                        m.reset()
+                utils.reset(model)
 
         print(f'Epoch: {epoch + 1}, Loss: {running_loss / 100}, Accuracy on the test set: {(correct / total) * 100}%')
         running_loss = 0.0

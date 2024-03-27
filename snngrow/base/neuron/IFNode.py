@@ -32,60 +32,20 @@ class IFNode(BaseNode.BaseNode):
     :param detach_reset: detach the computation graph of reset in backward
     :type detach_reset: bool
 
+    :param parallel_optim: parallel optimization
+    :type parallel_optim: bool
+
+    :param T: time steps
+    :type T: int
+
     The Integrate-and-Fire(IF) neuron, without decay input as LIF neuron.
     
     """
     def __init__(self, v_threshold: float = 1., v_reset: float = 0.,
-                 surrogate_function: Callable = Sigmoid.Sigmoid(), detach_reset: bool = False):
+                 surrogate_function: Callable = Sigmoid.Sigmoid(), detach_reset: bool = False,
+                 parallel_optim: bool = False, T: int = 1):
 
-        super().__init__(v_threshold, v_reset, surrogate_function, detach_reset)
+        super().__init__(v_threshold, v_reset, surrogate_function, detach_reset, parallel_optim, T)
 
-    def neuronal_charge(self, x: torch.Tensor):
+    def neuronal_dynamics(self, x: torch.Tensor):
         self.v = self.v + x
-
-    @staticmethod
-    def eval_forward_hard_reset(x: torch.Tensor, v: torch.Tensor, v_threshold: float, v_reset: float):
-        v = v + x
-        spike = (v >= v_threshold).to(x)
-        v = v_reset * spike + (1. - spike) * v
-        return spike, v
-
-    @staticmethod
-    def eval_forward_soft_reset(x: torch.Tensor, v: torch.Tensor, v_threshold: float):
-        v = v + x
-        spike = (v >= v_threshold).to(x)
-        v = v - spike * v_threshold
-        return spike, v
-
-    @staticmethod
-    def eval_forward_hard_reset(x_seq: torch.Tensor, v: torch.Tensor, v_threshold: float,
-                                               v_reset: float):
-        spike_seq = torch.zeros_like(x_seq)
-        for t in range(x_seq.shape[0]):
-            v = v + x_seq[t]
-            spike = (v >= v_threshold).to(x_seq)
-            v = v_reset * spike + (1. - spike) * v
-            spike_seq[t] = spike
-        return spike_seq, v
-
-    @staticmethod
-    def eval_forward_soft_reset(x_seq: torch.Tensor, v: torch.Tensor, v_threshold: float):
-        spike_seq = torch.zeros_like(x_seq)
-        for t in range(x_seq.shape[0]):
-            v = v + x_seq[t]
-            spike = (v >= v_threshold).to(x_seq)
-            v = v - spike * v_threshold
-            spike_seq[t] = spike
-        return spike_seq, v
-
-    def forward(self, x: torch.Tensor):
-        if self.training:
-            return super().forward(x)
-            
-        else:
-            self.v_float_to_tensor(x)
-            if self.v_reset is None:
-                spike, self.v = self.eval_forward_soft_reset(x, self.v, self.v_threshold)
-            else:
-                spike, self.v = self.eval_forward_hard_reset(x, self.v, self.v_threshold, self.v_reset)
-            return spike

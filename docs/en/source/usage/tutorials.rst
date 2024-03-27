@@ -33,13 +33,24 @@ Any discrete spiking neuron can be described by three discrete equations (neuron
 
 .. code-block:: python
 
+    @abstractmethod
     def neuronal_dynamics(self, x: torch.Tensor):
+        """
+        The neuronal dynamics difference equation. The sub-class must implement this function.
+        """
 
         raise NotImplementedError
 
-    def neuronal_fire(self):
+    def neuronal_fire(self, x: torch.Tensor):
+        """
+        The neuronal fire difference equation.
+        """
 
-        raise NotImplementedError
+        if self.training:
+            return self.surrogate_function(self.v - self.v_threshold)  
+                  
+        else:
+            return (self.v >= self.v_threshold).to(x) 
 
 Where :math:`X[t]` is an input, such as external input current; :math:`V[t]` is the membrane potential of the neuron after the output spike; :math:`f(V[t-1],X[t])` is the neuronal dynamics equation for the neuron state. The main difference is that the neuronal dynamics equation is different for different types of neurons; :math:`\Theta(x)` is the ``activation_function``. A commonly used activation function in this framework, extensively employed, is the step (Heaviside)  function. During forward propagation, if the input is greater than or equal to a threshold, it returns 1; otherwise, it returns 0. Such a ``tensor`` with only 0 or 1 elements is treated as a spike. The equation for the Heaviside function is as follows.
 
@@ -89,7 +100,7 @@ In SNNGrow, the Heaviside function is used for the forward propagation of the ne
                 0, x\neq 0
         \end{matrix}\right.
 
-The Dirichlet function is :math:`+\infty` at 0. If you directly use the Dirichlet function for gradient descent, it will make the training of the network extremely unstable. Therefore, we use surrogate gradient during backpropagation[1]_.
+The Dirichlet function is :math:`+\infty` at 0. If you directly use the Dirichlet function for gradient descent, it will make the training of the network extremely unstable. Therefore, we use surrogate gradient during backpropagation  [1]_.
 
 The principle of the Surrogate Gradient method is that during forward propagation, :math:`\Theta(x)` is used, while during backpropagation, :math:`\frac{\mathrm{d} y}{\mathrm{d} x} =\sigma ^{'} (x)` is used, where :math:`\sigma (x)` is the surrogate function. :math:`\sigma (x)` is usually a function similar in shape to :math:`\Theta(x)` , but is smooth and continuous. Surrogate functions are used in neurons to generate an approximate gradient for spikes.
 

@@ -22,7 +22,7 @@ You can build a simple convolutional spiking neural network, trained on the MNIS
                 nn.Conv2d(32, 64, kernel_size=3),
                 LIFNode(),
                 nn.Flatten(),
-                nn.Linear(7744, 128),
+                nn.Linear(36864, 128),
                 nn.Linear(128, 10)
             )
 

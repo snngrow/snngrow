@@ -12,6 +12,10 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+import os
+import sys
+sys.path.append(os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))))
+
 from snngrow.base.neuron import LIFNode
 from snngrow.base.neuron import IFNode
 from snngrow.base.surrogate import Sigmoid
@@ -24,7 +28,7 @@ print(torch.__version__)
 lifnode = LIFNode.LIFNode()
 ifnode = IFNode.IFNode()
 
-lifnode = LIFNode.LIFNode(surrogate_function=ATan.ATan())
+lifnode = LIFNode.LIFNode(parallel_optim=True, surrogate_function=ATan.ATan())
 ifnode = IFNode.IFNode(surrogate_function=ATan.ATan())
 
 x = torch.randn(2, 3, 4, 5)
