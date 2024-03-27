@@ -38,16 +38,22 @@ class LIFNode(BaseNode.BaseNode):
     :param detach_reset: detach the computation graph of reset in backward
     :type detach_reset: bool
 
+    :param parallel_optim: parallel optimization
+    :type parallel_optim: bool
+
+    :param T: time steps
+    :type T: int
+
     The Leaky Integrate-and-Fire(LIF) neuron
 
     """
     def __init__(self, tau: float = 2., decay_input: bool = True, v_threshold: float = 1.,
                  v_reset: float = 0., surrogate_function: Callable = Sigmoid.Sigmoid(),
-                 detach_reset: bool = False):
+                 detach_reset: bool = False, parallel_optim: bool = False, T: int = 1):
         
         assert isinstance(tau, float) and tau > 1.
 
-        super().__init__(v_threshold, v_reset, surrogate_function, detach_reset)
+        super().__init__(v_threshold, v_reset, surrogate_function, detach_reset, parallel_optim, T)
 
         self.tau = tau
         self.decay_input = decay_input
@@ -55,92 +61,35 @@ class LIFNode(BaseNode.BaseNode):
     def extra_repr(self):
         return super().extra_repr() + f', tau={self.tau}'
 
-    def neuronal_charge(self, x: torch.Tensor):
+    def neuronal_dynamics(self, x: torch.Tensor):
         if self.decay_input:
             if self.v_reset is None or self.v_reset == 0.:
-                self.v = self.neuronal_charge_decay_input_reset0(x, self.v, self.tau)
+                self.v = self.neuronal_dynamics_decay_input_reset0(x, self.v, self.tau)
             else:
-                self.v = self.neuronal_charge_decay_input(x, self.v, self.v_reset, self.tau)
+                self.v = self.neuronal_dynamics_decay_input(x, self.v, self.v_reset, self.tau)
 
         else:
             if self.v_reset is None or self.v_reset == 0.:
-                self.v = self.neuronal_charge_no_decay_input_reset0(x, self.v, self.tau)
+                self.v = self.neuronal_dynamics_no_decay_input_reset0(x, self.v, self.tau)
             else:
-                self.v = self.neuronal_charge_no_decay_input(x, self.v, self.v_reset, self.tau)
+                self.v = self.neuronal_dynamics_no_decay_input(x, self.v, self.v_reset, self.tau)
 
     @staticmethod
-    def neuronal_charge_decay_input_reset0(x: torch.Tensor, v: torch.Tensor, tau: float):
+    def neuronal_dynamics_decay_input_reset0(x: torch.Tensor, v: torch.Tensor, tau: float):
         v = v + (x - v) / tau
         return v
 
     @staticmethod
-    def neuronal_charge_decay_input(x: torch.Tensor, v: torch.Tensor, v_reset: float, tau: float):
+    def neuronal_dynamics_decay_input(x: torch.Tensor, v: torch.Tensor, v_reset: float, tau: float):
         v = v + (x - (v - v_reset)) / tau
         return v
 
     @staticmethod
-    def neuronal_charge_no_decay_input_reset0(x: torch.Tensor, v: torch.Tensor, tau: float):
+    def neuronal_dynamics_no_decay_input_reset0(x: torch.Tensor, v: torch.Tensor, tau: float):
         v = v * (1. - 1. / tau) + x
         return v
 
     @staticmethod
-    def neuronal_charge_no_decay_input(x: torch.Tensor, v: torch.Tensor, v_reset: float, tau: float):
+    def neuronal_dynamics_no_decay_input(x: torch.Tensor, v: torch.Tensor, v_reset: float, tau: float):
         v = v - (v - v_reset) / tau + x
         return v
-
-    @staticmethod
-    def eval_forward_hard_reset_decay_input(x: torch.Tensor, v: torch.Tensor, v_threshold: float,
-                                                            v_reset: float, tau: float):
-        v = v + (x - (v - v_reset)) / tau
-        spike = (v >= v_threshold).to(x)
-        v = v_reset * spike + (1. - spike) * v
-        return spike, v
-
-    @staticmethod
-    def eval_forward_hard_reset_no_decay_input(x: torch.Tensor, v: torch.Tensor, v_threshold: float,
-                                                               v_reset: float, tau: float):
-        v = v - (v - v_reset) / tau + x
-        spike = (v >= v_threshold).to(x)
-        v = v_reset * spike + (1. - spike) * v
-        return spike, v
-
-    @staticmethod
-    def eval_forward_soft_reset_decay_input(x: torch.Tensor, v: torch.Tensor, v_threshold: float,
-                                                            tau: float):
-        v = v + (x - v) / tau
-        spike = (v >= v_threshold).to(x)
-        v = v - spike * v_threshold
-        return spike, v
-
-    @staticmethod
-    def eval_forward_soft_reset_no_decay_input(x: torch.Tensor, v: torch.Tensor, v_threshold: float,
-                                                               tau: float):
-        v = v * (1. - 1. / tau) + x
-        spike = (v >= v_threshold).to(x)
-        v = v - spike * v_threshold
-        return spike, v
-
-    def forward(self, x: torch.Tensor):
-        if self.training:
-            return super().forward(x)            
-        else:
-            self.v_float_to_tensor(x)
-            if self.v_reset is None:
-                if self.decay_input:
-                    spike, self.v = self.eval_forward_soft_reset_decay_input(x, self.v,
-                                                                                             self.v_threshold, self.tau)
-                else:
-                    spike, self.v = self.eval_forward_soft_reset_no_decay_input(x, self.v,
-                                                                                                self.v_threshold,
-                                                                                                self.tau)
-            else:
-                if self.decay_input:
-                    spike, self.v = self.eval_forward_hard_reset_decay_input(x, self.v,
-                                                                                             self.v_threshold,
-                                                                                             self.v_reset, self.tau)
-                else:
-                    spike, self.v = self.eval_forward_hard_reset_no_decay_input(x, self.v,
-                                                                                                self.v_threshold,
-                                                                                                self.v_reset,
-                                                                                                self.tau)
-            return spike

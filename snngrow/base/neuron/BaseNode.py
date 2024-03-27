@@ -38,12 +38,12 @@ class BaseNode(nn.Module):
     The base class of differentiable spiking neurons.
     """
     def __init__(self, v_threshold: float = 1., v_reset: float = 0.,
-                 surrogate_function: Callable = Sigmoid.Sigmoid(), detach_reset: bool = False,
-                 parallel_optim: bool = True):       
+                 surrogate_function: Callable = Sigmoid.Sigmoid(), detach_reset: bool = False,                 parallel_optim: bool = False, T: int = 1):       
         assert isinstance(v_reset, float) or v_reset is None
         assert isinstance(v_threshold, float)
         assert isinstance(detach_reset, bool)
         assert isinstance(parallel_optim, bool)
+        assert isinstance(T, int)
         super().__init__()
 
         self._memories = {}
@@ -55,6 +55,7 @@ class BaseNode(nn.Module):
             self.register_memory('v', v_reset)
 
         self.parallel_optim = parallel_optim
+        self.T = T
 
         self.v_threshold = v_threshold
         self.v_reset = v_reset
@@ -73,23 +74,27 @@ class BaseNode(nn.Module):
         return v
 
     @abstractmethod
-    def neuronal_charge(self, x: torch.Tensor):
+    def neuronal_dynamics(self, x: torch.Tensor):
         """
-        The charge difference equation. The sub-class must implement this function.
+        The neuronal dynamics difference equation. The sub-class must implement this function.
         """
 
         raise NotImplementedError
 
-    def neuronal_fire(self):
+    def neuronal_fire(self, x: torch.Tensor):
         """
-        The fire difference equation.
+        The neuronal fire difference equation.
         """
 
-        return self.surrogate_function(self.v - self.v_threshold)
+        if self.training:
+            return self.surrogate_function(self.v - self.v_threshold)  
+                  
+        else:
+            return (self.v >= self.v_threshold).to(x)     
 
     def neuronal_reset(self, spike):
         """
-        The reset difference equation.
+        The neuronal reset difference equation.
         """
 
         if self.detach_reset:
@@ -106,7 +111,7 @@ class BaseNode(nn.Module):
             self.v = self.hard_reset(self.v, spike_d, self.v_reset)
 
     def extra_repr(self):
-        return f'v_threshold={self.v_threshold}, v_reset={self.v_reset}, detach_reset={self.detach_reset}, parallel_optim={self.parallel_optim}'
+        return f'v_threshold={self.v_threshold}, v_reset={self.v_reset}, detach_reset={self.detach_reset}, parallel_optim={self.parallel_optim}, T={self.T}'
 
     def simple_forward(self, x: torch.Tensor):
         """
@@ -116,13 +121,13 @@ class BaseNode(nn.Module):
         :return: out spikes
         :rtype: torch.Tensor
 
-        Forward by the order of charge - fire - reset.
+        Forward by the order of dynamics - fire - reset.
 
         """
 
         self.v_float_to_tensor(x)
-        self.neuronal_charge(x)
-        spike = self.neuronal_fire()
+        self.neuronal_dynamics(x)
+        spike = self.neuronal_fire(x)
         self.neuronal_reset(spike)
         return spike
 
@@ -131,27 +136,28 @@ class BaseNode(nn.Module):
             v_init = self.v
             self.v = torch.full_like(x.data, v_init)
 
-    def parallel_optim_forward(self, x_seq: torch.Tensor, *args, **kwargs):
+    def parallel_optim_forward(self, x_seq: torch.Tensor):
         """
-        :param x: input tensor with ``shape = [T, N, *] ``
-        :type x: torch.Tensor
+        :param x: input tensor with ``shape = [T * N, *] ``
+        :type x: torch.Tensor  with ``shape = [T * N, *] ``
 
-        The parallel forward function, which is implemented by calling ``simple_forward(x[t], *args, **kwargs)`` over ``T`` times
+        The parallel forward function, which is implemented by calling ``simple_forward(x_seq[t])`` over ``T`` times
 
         """
-        T = x_seq.shape[0]
+        x_shape = x_seq.shape
+        batch_size = x_shape[0] // self.T
+        x_seq = x_seq.view(self.T, batch_size, *x_shape[1:])
         y_seq = []
-        for t in range(T):
-            y = self.simple_forward(x_seq[t], *args, **kwargs)
+        for t in range(self.T):
+            y = self.simple_forward(x_seq[t])
             y_seq.append(y.unsqueeze(0))
+        return torch.cat(y_seq, 0).flatten(0, 1)
 
-        return torch.cat(y_seq, 0)
-
-    def forward(self, *args, **kwargs):
+    def forward(self, x: torch.Tensor):
         if self.parallel_optim :
-            return self.parallel_optim_forward(*args, **kwargs)
+            return self.parallel_optim_forward(x)
         else :
-            return self.simple_forward(*args, **kwargs)
+            return self.simple_forward(x)
 
     def register_memory(self, name: str, value):
         """
@@ -178,6 +184,36 @@ class BaseNode(nn.Module):
 
     def set_reset_value(self, name: str, value):
         self._memories_rv[name] = copy.deepcopy(value)
+
+    def memories(self):
+        """
+        :return: an iterator over all stateful variables
+        :rtype: Iterator
+        """
+        for name, value in self._memories.items():
+            yield value
+
+    def named_memories(self):
+        """
+        :return: an iterator over all stateful variables and their names
+        :rtype: Iterator
+        """
+        for name, value in self._memories.items():
+            yield name, value
+
+    def detach(self):
+        """
+        Detach all stateful variables.
+
+        .. admonition:: Tip
+            :class: tip
+
+            We can use this function to implement TBPTT(Truncated Back Propagation Through Time).
+
+        """
+        for key in self._memories.keys():
+            if isinstance(self._memories[key], torch.Tensor):
+                self._memories[key].detach_()
 
     def __getattr__(self, name: str):
         if '_memories' in self.__dict__:
@@ -214,37 +250,8 @@ class BaseNode(nn.Module):
         keys = [key for key in keys if not key[0].isdigit()]
 
         return sorted(keys)
-
-    def memories(self):
-        """
-        :return: an iterator over all stateful variables
-        :rtype: Iterator
-        """
-        for name, value in self._memories.items():
-            yield value
-
-    def named_memories(self):
-        """
-        :return: an iterator over all stateful variables and their names
-        :rtype: Iterator
-        """
-        for name, value in self._memories.items():
-            yield name, value
-
-    def detach(self):
-        """
-        Detach all stateful variables.
-
-        .. admonition:: Tip
-            :class: tip
-
-            We can use this function to implement TBPTT(Truncated Back Propagation Through Time).
-
-        """
-        for key in self._memories.keys():
-            if isinstance(self._memories[key], torch.Tensor):
-                self._memories[key].detach_()
-
+    
+    
     def _apply(self, fn):
         for key, value in self._memories.items():
             if isinstance(value, torch.Tensor):
