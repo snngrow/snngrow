@@ -1,7 +1,7 @@
 # SNNGrow
 
 <p align="center">
-  	<img alt="SNNGrow" src="./docs/source/_static/logo.png" width=50%>
+  	<img alt="SNNGrow" src="./docs/en/source/_static/logo.png" width=50%>
 </p> 
 
 [English](./README.md) | 中文(Chinese)
