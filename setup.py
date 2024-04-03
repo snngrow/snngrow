@@ -39,7 +39,7 @@ setup(
     description="Third-generation Artificial Intelligence SNN Universal Implementation",
     long_description=long_description,
     long_description_content_type="text/markdown",
-    url="https://github.com/BIT-AETAS/snngrow", 
+    url="https://github.com/snngrow/snngrow", 
     install_requires=install_requires,
     python_requires='>=3.6,<=3.10',
     packages=find_packages(),
