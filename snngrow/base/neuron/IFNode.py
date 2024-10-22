@@ -38,14 +38,17 @@ class IFNode(BaseNode.BaseNode):
     :param T: time steps
     :type T: int
 
+    :param spike_out: whether to output SpikeTensor
+    :type spike_out: bool
+
     The Integrate-and-Fire(IF) neuron, without decay input as LIF neuron.
     
     """
     def __init__(self, v_threshold: float = 1., v_reset: float = 0.,
                  surrogate_function: Callable = Sigmoid.Sigmoid(), detach_reset: bool = False,
-                 parallel_optim: bool = False, T: int = 1):
+                 parallel_optim: bool = False, T: int = 1, spike_out: bool = False):
 
-        super().__init__(v_threshold, v_reset, surrogate_function, detach_reset, parallel_optim, T)
+        super().__init__(v_threshold, v_reset, surrogate_function, detach_reset, parallel_optim, T, spike_out)
 
     def neuronal_dynamics(self, x: torch.Tensor):
         self.v = self.v + x

@@ -17,7 +17,7 @@ from typing import Callable
 import torch
 import torch.nn as nn
 import copy
-
+from ..spiketensor import SpikeTensor
 from ..surrogate import Sigmoid
 
 class BaseNode(nn.Module):
@@ -35,10 +35,20 @@ class BaseNode(nn.Module):
     :param detach_reset: detach the computation graph of reset in backward
     :type detach_reset: bool
 
+    :param parallel_optim: parallel optimization
+    :type parallel_optim: bool
+
+    :param T: time steps
+    :type T: int
+
+    :param spike_out: whether to output SpikeTensor
+    :type spike_out: bool
+
     The base class of differentiable spiking neurons.
     """
     def __init__(self, v_threshold: float = 1., v_reset: float = 0.,
-                 surrogate_function: Callable = Sigmoid.Sigmoid(), detach_reset: bool = False,                 parallel_optim: bool = False, T: int = 1):       
+                 surrogate_function: Callable = Sigmoid.Sigmoid(), detach_reset: bool = False, 
+                 parallel_optim: bool = False, T: int = 1, spike_out: bool = False):       
         assert isinstance(v_reset, float) or v_reset is None
         assert isinstance(v_threshold, float)
         assert isinstance(detach_reset, bool)
@@ -56,6 +66,7 @@ class BaseNode(nn.Module):
 
         self.parallel_optim = parallel_optim
         self.T = T
+        self.spike_out = spike_out
 
         self.v_threshold = v_threshold
         self.v_reset = v_reset
@@ -64,13 +75,19 @@ class BaseNode(nn.Module):
         self.surrogate_function = surrogate_function
 
     @staticmethod
-    def hard_reset(v: torch.Tensor, spike: torch.Tensor, v_reset: float):
-        v = (1. - spike) * v + spike * v_reset
+    def hard_reset(v: torch.Tensor, spike: torch.Tensor, v_reset: float, spike_out: bool):
+        if spike_out:
+            v = torch.logical_not(spike) * v + spike * v_reset  
+        else:
+            v = (1. - spike) * v + spike * v_reset  
         return v
 
     @staticmethod
-    def soft_reset(v: torch.Tensor, spike: torch.Tensor, v_threshold: float):
-        v = v - spike * v_threshold
+    def soft_reset(v: torch.Tensor, spike: torch.Tensor, v_threshold: float, spike_out: bool):
+        if spike_out:
+            v = v - spike * v_threshold   
+        else:
+            v = v - spike * v_threshold   
         return v
 
     @abstractmethod
@@ -90,7 +107,10 @@ class BaseNode(nn.Module):
             return self.surrogate_function(self.v - self.v_threshold)  
                   
         else:
-            return (self.v >= self.v_threshold).to(x)     
+            if self.spike_out:
+                return SpikeTensor(self.v >= self.v_threshold)
+            else:
+                return (self.v >= self.v_threshold).to(x) 
 
     def neuronal_reset(self, spike):
         """
@@ -104,11 +124,11 @@ class BaseNode(nn.Module):
 
         if self.v_reset is None:
             # soft reset
-            self.v = self.soft_reset(self.v, spike_d, self.v_threshold)
+            self.v = self.soft_reset(self.v, spike_d.elem, self.v_threshold, self.spike_out)
 
         else:
             # hard reset
-            self.v = self.hard_reset(self.v, spike_d, self.v_reset)
+            self.v = self.hard_reset(self.v, spike_d.elem, self.v_reset, self.spike_out)
 
     def extra_repr(self):
         return f'v_threshold={self.v_threshold}, v_reset={self.v_reset}, detach_reset={self.detach_reset}, parallel_optim={self.parallel_optim}, T={self.T}'
@@ -124,11 +144,11 @@ class BaseNode(nn.Module):
         Forward by the order of dynamics - fire - reset.
 
         """
-
         self.v_float_to_tensor(x)
         self.neuronal_dynamics(x)
         spike = self.neuronal_fire(x)
         self.neuronal_reset(spike)
+
         return spike
 
     def v_float_to_tensor(self, x: torch.Tensor):

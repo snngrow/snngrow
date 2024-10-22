@@ -23,11 +23,11 @@ def atan_backward(grad_output: torch.Tensor, x: torch.Tensor, alpha: float):
 
 class atan(torch.autograd.Function):
     @staticmethod
-    def forward(ctx, x, alpha):
+    def forward(ctx, x, alpha, spike_out):
         if x.requires_grad:
             ctx.save_for_backward(x)
             ctx.alpha = alpha
-        return heaviside(x)
+        return heaviside(x, spike_out)
 
     @staticmethod
     def backward(ctx, grad_output):
@@ -44,13 +44,13 @@ class ATan(SurrogateFunctionBase):
     The arc tangent surrogate spiking function
 
     '''
-    def __init__(self, alpha=2.0, spiking=True):
-        super().__init__(alpha, spiking)
+    def __init__(self, alpha=2.0, spike_out = False, spiking=True):
+        super().__init__(alpha, spike_out, spiking)
 
     @staticmethod
 
-    def spiking_function(x, alpha):
-        return atan.apply(x, alpha)
+    def spiking_function(x, alpha, spike_out):
+        return atan.apply(x, alpha, spike_out)
 
     @staticmethod
 
