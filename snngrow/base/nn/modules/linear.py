@@ -23,15 +23,17 @@ from snngrow.base.nn import functional as snngrow_F
 __all__ = ["Linear"]
 
 class Linear(nn.Module):
-    r"""Applies a linear transformation to the incoming data: :math:`y = xA^T + b`
+    r"""Applies a linear transformation to the incoming data that maybe is SpikeTensor: :math:`y = xA^T + b`
 
-    This module supports :ref:`TensorFloat32<tf32_on_ampere>`.
 
     Args:
         in_features: size of each input sample
         out_features: size of each output sample
         bias: If set to ``False``, the layer will not learn an additive bias.
             Default: ``True``
+        device: the desired device of the weight and bias tensors.
+        spike_in: If set to ``True``, the input tensor is a SpikeTensor.
+
 
     Shape:
         - Input: :math:`(*, H_{in})` where :math:`*` means any number of
