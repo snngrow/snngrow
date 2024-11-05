@@ -101,4 +101,32 @@ Dirichlet函数在0处为  :math:`+\infty` 。如果直接使用Dirichlet函数�
 
 在SNNGrow中，替代梯度函数在基类中实现，提供了一些常用函数的替代。替代函数可以作为参数指定给神经元构造函数，  ``surrogate_function``  。
 
-..  [1] Neftci E O, Mostafa H, Zenke F. Surrogate gradient learning in spiking neural networks: Bringing the power of gradient-based optimization to spiking neural networks[J]. IEEE Signal Processing Magazine, 2019, 36(6): 51-63. 
+..  [1] Neftci E O, Mostafa H, Zenke F. Surrogate gradient learning in spiking neural networks: Bringing the power of gradient-based optimization to spiking neural networks[J]. IEEE Signal Processing Magazine, 2019, 36(6): 51-63.
+
+====================
+脉冲计算模式
+====================
+
+脉冲计算模式是SNNGrow实现低能耗的核心。在脉冲计算模式下，脉冲神经元的输出是脉冲化的，使用自定义的SpikeTensor对神经元的输出进行封装。SpikeTensor是一个包含脉冲神经元输出的张量，其继承于Pytorch的Tensor，但底层使用低精度(1 Byte)数据类型存储，其中1表示脉冲，0表示没有脉冲。在脉冲计算模式下，SNNGrow使用Cutlass针对SpikeTensor开发混合数据类型的基本运算操作（如GEMM），将高功耗的乘加运算替换成低功耗的加法运算。
+
+脉冲计算模式无需显式的开启，只需在构建神经元时指定``spike_out``  参数即可。
+
+例如定义一个简单的LIF神经元：
+
+.. code-block:: python
+
+  surrogate = Sigmoid.Sigmoid(spike_out=True)
+  # input is a Tensor, output is a SpikeTensor
+  LIFNode(T=T, spike_out=True, surrogate_function=surrogate)
+
+此时脉冲神经元的输出是一个SpikeTensor。在前向传播过程中，SpikeTensor会自动传播到下一层神经元，从而实现脉冲神经网络的训练和运行。针对SpikeTensor，SNNGrow实现了一系列上层算子，见  :mod:`snngrow.base.nn`  。
+
+例如构建一个脉冲神经网络的全连接层：
+
+.. code-block:: python
+
+  import snngrow.base.nn as snngrow_nn
+  # input is a SpikeTensor, output is a Tensor
+  snngrow_nn.Linear(512, 512, spike_in=True)
+
+更多优化算子仍在开发中，敬请期待。

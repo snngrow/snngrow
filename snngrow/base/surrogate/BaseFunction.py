@@ -14,7 +14,8 @@
 
 import torch
 import torch.nn as nn
-def heaviside(x: torch.Tensor):
+from ..spiketensor import SpikeTensor
+def heaviside(x: torch.Tensor, spike_out: bool = False):
     '''
     :param x: the input tensor
     :return: the output tensor
@@ -22,8 +23,10 @@ def heaviside(x: torch.Tensor):
     The heaviside function
 
     '''
-
-    return (x >= 0).to(x)
+    if spike_out:
+        return SpikeTensor(x >= 0)
+    else:
+        return (x >= 0).to(x)
 
 
 class SurrogateFunctionBase(nn.Module):
@@ -36,10 +39,11 @@ class SurrogateFunctionBase(nn.Module):
     The base class of surrogate spiking function.
 
     '''
-    def __init__(self, alpha, spiking=True):
+    def __init__(self, alpha, spike_out = False, spiking=True):
         super().__init__()
         self.spiking = spiking
         self.alpha = alpha
+        self.spike_out = spike_out
 
     def set_spiking_mode(self, spiking: bool):
         self.spiking = spiking
@@ -48,7 +52,7 @@ class SurrogateFunctionBase(nn.Module):
         return f'alpha={self.alpha}, spiking={self.spiking}'
 
     @staticmethod
-    def spiking_function(x, alpha):
+    def spiking_function(x, alpha, spike_out):
         raise NotImplementedError
 
     @staticmethod
@@ -57,6 +61,6 @@ class SurrogateFunctionBase(nn.Module):
 
     def forward(self, x: torch.Tensor):
         if self.spiking:
-            return self.spiking_function(x, self.alpha)
+            return self.spiking_function(x, self.alpha, self.spike_out)
         else:
             return self.primitive_function(x, self.alpha)

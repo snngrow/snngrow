@@ -20,16 +20,16 @@ from .BaseFunction import heaviside
 
 def sigmoid_backward(grad_output: torch.Tensor, x: torch.Tensor, alpha: float):
     sgax = (x * alpha).sigmoid_()
-    return grad_output * (1. - sgax) * sgax * alpha, None
+    return grad_output * (1. - sgax) * sgax * alpha, None, None
 
 
 class sigmoid(torch.autograd.Function):
     @staticmethod
-    def forward(ctx, x, alpha):
+    def forward(ctx, x, alpha, spike_out):
         if x.requires_grad:
             ctx.save_for_backward(x)
             ctx.alpha = alpha
-        return heaviside(x)
+        return heaviside(x, spike_out)
 
     @staticmethod
     def backward(ctx, grad_output):
@@ -46,12 +46,12 @@ class Sigmoid(SurrogateFunctionBase):
     The sigmoid surrogate spiking function.
 
     '''
-    def __init__(self, alpha=4.0, spiking=True):
-        super().__init__(alpha, spiking)
+    def __init__(self, alpha=4.0, spike_out = False, spiking=True):
+        super().__init__(alpha, spike_out, spiking)
 
     @staticmethod
-    def spiking_function(x, alpha):
-        return sigmoid.apply(x, alpha)
+    def spiking_function(x, alpha, spike_out):
+        return sigmoid.apply(x, alpha, spike_out)
 
     @staticmethod
 

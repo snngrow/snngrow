@@ -54,6 +54,7 @@ net = torch.nn.Sequential(
 
 y = net(x)
 utils.reset(net)
+
 ```
 An example of building a network using spiking computation mode:
 ```
@@ -125,4 +126,3 @@ If you are using SNNGrow, please consider citing it as follows:
 ## About
 
 Beijing Institute of Technology [AETAS Laboratory](https://www.aetasbit.com/), Tsinghua University [DSP-LAB](dsp.ime.tsinghua.edu.cn),  Beijing Normal University and [Utarn Technology Co., Ltd.](https://www.utarn.com/w/home) are the main developers of SNNGrow.
-

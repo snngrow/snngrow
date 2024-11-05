@@ -12,7 +12,10 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+from itertools import repeat
+from typing import List, Tuple, Union
 import logging
+import torch
 import torch.nn as nn
 from .neuron import BaseNode
 
@@ -31,3 +34,26 @@ def reset(net: nn.Module):
                 logging.warning(f'Trying to call `reset()` of {m}, which is not snngrow.base.neuron'
                                 f'.BaseNode')
             m.reset()
+
+
+def make_tuple(
+    x: Union[int, List[int], Tuple[int, ...], torch.Tensor], ndim: int, name: str
+) -> Tuple[int, ...]:
+    """
+    Make an n-tuple from the input.
+
+    :param x: The input value.
+    :param ndim: The desired dimension of the tuple.
+    :param name: The name of the input value.
+    :return: The n-tuple.
+    """
+    if isinstance(x, int):
+        x = tuple(repeat(x, ndim))
+    elif isinstance(x, list):
+        x = tuple(x)
+    elif isinstance(x, torch.Tensor):
+        x = tuple(x.view(-1).cpu().numpy().tolist())
+
+    assert isinstance(x, tuple) and len(x) == ndim, name + " must be an integer or a tuple of " + str(ndim) + " integers."
+    return x
+

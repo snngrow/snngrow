@@ -12,10 +12,15 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+import glob
 import os
 import re
 import sys
+import platform
+import torch
 from setuptools import setup, find_packages
+from torch.utils.cpp_extension import BuildExtension, CUDAExtension, CppExtension, CUDA_HOME
+from torch.__config__ import parallel_info
 
 # version
 here = os.path.abspath(os.path.dirname(__file__))
@@ -31,6 +36,56 @@ with open("./requirements.txt", "r", encoding="utf-8") as fh:
 with open("./README.md", "r", encoding="utf-8") as fh:
     long_description = fh.read()
 
+# pybind_fn
+if (torch.cuda.is_available() and CUDA_HOME is not None) or (
+    os.getenv("FORCE_CUDA", "0") == "1"
+):
+    device = "cuda"
+    pybind_fn = f"snngrow/snngrow_backend/pybind_gemm_cuda.cu"
+else:
+    device = "cpu"
+    # pybind_fn = f"pybind_{device}.cpp"
+    pybind_fn = None
+
+sources = [os.path.join(pybind_fn) if pybind_fn is not None else None]
+
+include_dirs=['snngrow/snngrow_backend/cutlass_extension/include', 'snngrow/snngrow_backend/spikegemm']
+
+for fpath in glob.glob(os.path.join("snngrow", "snngrow_backend", "torch_gemm", "*")):
+    if (fpath.endswith(".cpp") and device in ["cpu", "cuda"]) or (
+        fpath.endswith(".cu") and device == "cuda"
+    ):
+        sources.append(fpath)
+
+extension_type = CUDAExtension if device == "cuda" else CppExtension
+
+extra_compile_args = {
+    "cxx": ["-O3"],
+    "nvcc": ["-O3"],
+}
+
+# Not on Windows
+if not os.name == 'nt':
+    extra_compile_args['cxx'] += ['-Wno-sign-compare']
+
+# OpenMP
+info = parallel_info()
+if ('backend: OpenMP' in info and 'OpenMP not found' not in info
+        and sys.platform != 'darwin'):
+    extra_compile_args['cxx'] += ['-DAT_PARALLEL_OPENMP']
+    if sys.platform == 'win32':
+        extra_compile_args['cxx'] += ['/openmp']
+    else:
+        extra_compile_args['cxx'] += ['-fopenmp']
+else:
+    print('Compiling without OpenMP...')
+
+# Compile for mac arm64
+if sys.platform == 'darwin':
+    extra_compile_args['cxx'] += ['-D_LIBCPP_DISABLE_AVAILABILITY']
+    if platform.machine == 'arm64':
+       extra_compile_args['cxx'] += ['-arch', 'arm64']
+
 setup(
     name="snngrow",
     version=version,
@@ -39,7 +94,7 @@ setup(
     description="Third-generation Artificial Intelligence SNN Universal Implementation",
     long_description=long_description,
     long_description_content_type="text/markdown",
-    url="https://github.com/BIT-AETAS/snngrow", 
+    url="https://github.com/snngrow/snngrow", 
     install_requires=install_requires,
     python_requires='>=3.6,<=3.10',
     packages=find_packages(),
@@ -54,4 +109,13 @@ setup(
         'Programming Language :: Python :: 3.9',
         'Programming Language :: Python :: 3.10',
     ],
+    ext_modules=[
+            extension_type(
+                name ='snngrow_backend', 
+                sources = sources, 
+                include_dirs = include_dirs, 
+                extra_compile_args=extra_compile_args
+            )
+        ],
+    cmdclass={'build_ext': BuildExtension.with_options(use_ninja=False)}
 )

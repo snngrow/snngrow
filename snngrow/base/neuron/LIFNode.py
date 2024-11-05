@@ -44,16 +44,19 @@ class LIFNode(BaseNode.BaseNode):
     :param T: time steps
     :type T: int
 
+    :param spike_out: whether to output SpikeTensor
+    :type spike_out: bool
+
     The Leaky Integrate-and-Fire(LIF) neuron
 
     """
     def __init__(self, tau: float = 2., decay_input: bool = True, v_threshold: float = 1.,
                  v_reset: float = 0., surrogate_function: Callable = Sigmoid.Sigmoid(),
-                 detach_reset: bool = False, parallel_optim: bool = False, T: int = 1):
+                 detach_reset: bool = False, parallel_optim: bool = False, T: int = 1, spike_out: bool = False):
         
         assert isinstance(tau, float) and tau > 1.
 
-        super().__init__(v_threshold, v_reset, surrogate_function, detach_reset, parallel_optim, T)
+        super().__init__(v_threshold, v_reset, surrogate_function, detach_reset, parallel_optim, T, spike_out)
 
         self.tau = tau
         self.decay_input = decay_input

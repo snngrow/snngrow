@@ -52,7 +52,6 @@ net = torch.nn.Sequential(
 )
 
 y = net(x)
-utils.reset(net)
 ```
 如果使用脉冲计算模式，构建网络的例子如下：
 ```

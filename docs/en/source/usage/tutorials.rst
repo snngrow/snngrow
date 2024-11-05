@@ -107,3 +107,31 @@ The principle of the Surrogate Gradient method is that during forward propagatio
 SNNGrow in :meth:`snngrow.base.surrogate.BaseFunction` implements the surrogate function in the base class, and provides an alternative for some commonly used functions, The surrogate function can be specified as an argument to the neuron constructor,  ``surrogate_function`` .
 
 ..  [1] Neftci E O, Mostafa H, Zenke F. Surrogate gradient learning in spiking neural networks: Bringing the power of gradient-based optimization to spiking neural networks[J]. IEEE Signal Processing Magazine, 2019, 36(6): 51-63.
+
+====================
+Spiking Computation Mode
+====================
+
+The spiking computation mode is the core of SNNGrow's low-power implementation. In this mode, the output of spiking neurons is spike-based, and a custom SpikeTensor is used to encapsulate the neuron outputs. SpikeTensor is a tensor containing the outputs of spiking neurons, inheriting from PyTorch's Tensor. However, it uses a low-precision (1 Byte) data type for storage, where 1 represents a spike and 0 represents no spike. In spiking computation mode, SNNGrow leverages Cutlass to develop basic operations for SpikeTensor with mixed data types (such as GEMM), replacing high-power-consuming multiply-add operations with low-power addition operations.
+
+The spiking computation mode does not need to be explicitly activated; it only requires specifying the spike_out parameter when constructing neurons.
+
+For example, to define a simple LIF neuron:
+
+.. code-block:: python
+
+  surrogate = Sigmoid.Sigmoid(spike_out=True)
+  # input is a Tensor, output is a SpikeTensor
+  LIFNode(T=T, spike_out=True, surrogate_function=surrogate)
+
+At this point, the output of the spiking neuron is a SpikeTensor. During the forward propagation process, the SpikeTensor will automatically propagate to the next layer of neurons, enabling the training and execution of the spiking neural network. SNNGrow has implemented a series of high-level operators for SpikeTensor, as seen in :mod:`snngrow.base.nn`  .
+
+For example, to define a fully connected layer:
+
+.. code-block:: python
+
+  import snngrow.base.nn as snngrow_nn
+  # input is a SpikeTensor, output is a Tensor
+  snngrow_nn.Linear(512, 512, spike_in=True)
+
+More optimized operators are still under development, so stay tuned.
