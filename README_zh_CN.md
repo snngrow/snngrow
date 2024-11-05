@@ -52,7 +52,6 @@ net = torch.nn.Sequential(
 )
 
 y = net(x)
-utils.reset(net)
 ```
 如果使用脉冲计算模式，构建网络的例子如下：
 ```
@@ -77,6 +76,29 @@ class SimpleNet(nn.Module):
         )
 ```
 
+## 超低能耗稀疏脉冲神经网络计算
+
+SNNGrow支持低功耗的脉冲稀疏计算，针对脉冲数据，自定义了一个SpikeTensor的数据结构，得益于脉冲的二值化特性，这个数据结构在底层使用低比特的存储，只需要1Byte来存储脉冲数据。同时，针对SpikeTensor，SNNGrow使用CUDA和CUTLASS定制低能耗的算子，如针对SpikeTensor的矩阵乘法，真正地实现从底层将乘法替换成加法。
+
+可视化GPU上脉冲矩阵乘法和torch的矩阵乘法指令调用情况，在SNNGrow中，相比于torch，实现了完全使用加法运算来进行矩阵乘法，这将节省非常多的能耗，同时减少对存储的需求。
+
+<p align="center">
+  	<img alt="instruction" src="./docs/en/source/_static/instruction.png" width=100%>
+</p> 
+
+SNNGrow将会带来数倍的速度提升，我们实测了矩阵乘法的速度，和同规模的torch矩阵乘法相比，SNNGrow可以带来2倍以上的速度提升。
+
+<p align="center">
+  	<img alt="compute" src="./docs/en/source/_static/compute.png" width=100%>
+</p> 
+
+得益于脉冲的数据形式，SNNGrow只要求更少的内存占用和带宽需求，这意味着在同样的硬件资源下，SNNGrow可以运行更大的模型。
+
+<p align="center">
+  	<img alt="memory" src="./docs/en/source/_static/memory.png" width=100%>
+</p> 
+
+
 ## 开发计划
 
 SNNGrow仍在持续开发中：
@@ -100,4 +122,5 @@ SNNGrow仍在持续开发中：
 ```
 ## 项目信息
 
-[北京市优智创芯有限公司](https://www.utarn.com/w/home)和北京理工大学[AETAS实验室](https://www.aetasbit.com/)是本项目的主要开发者。
+
+北京理工大学[AETAS实验室](https://www.aetasbit.com/), 清华大学[DSP-LAB](dsp.ime.tsinghua.edu.cn), 北京师范大学和[北京市优智创芯有限公司](https://www.utarn.com/w/home)是本项目的主要开发者。

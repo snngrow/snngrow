@@ -54,6 +54,7 @@ net = torch.nn.Sequential(
 
 y = net(x)
 utils.reset(net)
+
 ```
 An example of building a network using spiking computation mode:
 ```
@@ -77,6 +78,28 @@ class SimpleNet(nn.Module):
             nn.Linear(128, 10)
         )
 ```
+
+## Ultra-low energy consumption sparse spiking neural network computing
+
+SNNGrow supports low-power sparse computation. It defines a SpikeTensor data structure for spike data. Thanks to the binarization property of spike, this data structure uses low bit storage at the underlying level, and only needs 1Byte to store the spike data. Meanwhile, for SpikeTensor, SNNGrow uses CUDA and CUTLASS to customize low-energy operators, such as matrix multiplication for SpikeTensor, to really replace multiplication with addition from the bottom layer.
+
+Visualizing the matrix multiplication instruction call of spike matrix multiplication and torch on GPU, in SNNGrow, compared with torch, the matrix multiplication is realized by completely using addition operation, which will save a lot of energy consumption and reduce the storage requirements.
+
+<p align="center">
+  	<img alt="instruction" src="./docs/en/source/_static/instruction.png" width=100%>
+</p> 
+
+SNNGrow will bring several times the speed up. We measured the speed of matrix multiplication. Compared to the same scale torch matrix multiplication, SNNGrow can bring more than 2 times the speed up.
+
+<p align="center">
+  	<img alt="compute" src="./docs/en/source/_static/compute.png" width=100%>
+</p> 
+
+Benefiting from the data form of pulses, SNNGrow only requires less memory footprint and bandwidth requirements, which means that SNNGrow can run larger models with the same hardware resources.
+
+<p align="center">
+  	<img alt="memory" src="./docs/en/source/_static/memory.png" width=100%>
+</p> 
 
 ## Development plans
 
@@ -102,4 +125,4 @@ If you are using SNNGrow, please consider citing it as follows:
 
 ## About
 
-[Utarn Technology Co., Ltd.](https://www.utarn.com/w/home)and [Beijing Institute of Technology AETAS Laboratory](https://www.aetasbit.com/) are the main developers of SNNGrow.
+Beijing Institute of Technology [AETAS Laboratory](https://www.aetasbit.com/), Tsinghua University [DSP-LAB](dsp.ime.tsinghua.edu.cn),  Beijing Normal University and [Utarn Technology Co., Ltd.](https://www.utarn.com/w/home) are the main developers of SNNGrow.
