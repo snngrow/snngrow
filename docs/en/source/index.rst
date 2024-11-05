@@ -12,6 +12,20 @@ SNNGrow is a low-power, large-scale spiking neural network training and inferenc
 
 The vision of SNNGrow is to decode human intelligence and the mechanisms of its evolution, and to provide support for the development of brain-inspired intelligent agents in a future society where humans coexist with artificial intelligence.
 
+SNNGrow supports low-power sparse computation. It defines a SpikeTensor data structure for spike data. Thanks to the binarization property of spike, this data structure uses low bit storage at the underlying level, and only needs 1Byte to store the spike data. Meanwhile, for SpikeTensor, SNNGrow uses CUDA and CUTLASS to customize low-energy operators, such as matrix multiplication for SpikeTensor, to really replace multiplication with addition from the bottom layer.
+
+Visualizing the matrix multiplication instruction call of spike matrix multiplication and torch on GPU, in SNNGrow, compared with torch, the matrix multiplication is realized by completely using addition operation, which will save a lot of energy consumption and reduce the storage requirements.
+
+.. image:: _static/instruction.png
+
+SNNGrow will bring several times the speed up. We measured the speed of matrix multiplication. Compared to the same scale torch matrix multiplication, SNNGrow can bring more than 2 times the speed up.
+
+.. image:: _static/compute.png
+
+Benefiting from the data form of pulses, SNNGrow only requires less memory footprint and bandwidth requirements, which means that SNNGrow can run larger models with the same hardware resources.
+
+.. image:: _static/memory.png
+
 .. toctree::
    :maxdepth: 2
    :caption: USAGE:
