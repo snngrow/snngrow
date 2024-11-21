@@ -101,12 +101,20 @@ Benefiting from the data form of pulses, SNNGrow only requires less memory footp
   	<img alt="memory" src="./docs/en/source/_static/memory.png" width=100%>
 </p> 
 
+## Brain-inspired learning algorithm support
+
+Snngrow provides STDP(Spike Timing Dependent Plasticity) learning rule, which can be used to learn the weights of fully connected layers.
+
+<p align="center">
+  	<img alt="test_stdp" src="./docs/en/source/_static/test_stdp.png" width=100%>
+</p> 
+
 ## Development plans
 
 SNNGrow is still under active development:
 - [x] Large-scale deep spiking neural network training and inference
 - [x] Ultra-low energy consumption sparse spiking neural network computing
-- [ ] Brain-inspired learning algorithm support
+- [x] Brain-inspired learning algorithm support
 - [ ] Bionic neural network sparse structure support
 
 ## Cite

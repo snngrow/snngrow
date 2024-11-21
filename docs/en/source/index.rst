@@ -26,6 +26,10 @@ Benefiting from the data form of pulses, SNNGrow only requires less memory footp
 
 .. image:: _static/memory.png
 
+Snngrow provides STDP(Spike Timing Dependent Plasticity) learning rule, which can be used to learn the weights of fully connected layers.
+
+.. image:: _static/test_stdp.png
+
 .. toctree::
    :maxdepth: 2
    :caption: USAGE:
@@ -44,6 +48,7 @@ Benefiting from the data form of pulses, SNNGrow only requires less memory footp
 
    /apis/neurons
    /apis/surrogate
+   /apis/learning
    /apis/utils
    /apis/nn
 

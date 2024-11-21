@@ -65,7 +65,7 @@ class Linear(nn.Module):
     weight: torch.Tensor
 
     def __init__(self, in_features: int, out_features: int, bias: bool = True,
-                 device=None, dtype=None, spike_in=False) -> None:
+                 device=None, dtype=None, spike_in=False, mask=None) -> None:
         factory_kwargs = {'device': device, 'dtype': dtype}
         super(Linear, self).__init__()
         self.in_features = in_features
@@ -93,6 +93,19 @@ class Linear(nn.Module):
             return F.linear(input, self.weight, self.bias)
         else:
             return snngrow_F.linear(input, self.weight, self.bias)
+   
+    def update(self, dw):
+        """
+        :param dw: weight update
+        :type x: torch.Tensor
+
+        Update weight.
+        """
+
+        with torch.no_grad():
+            if self.mask is not None:
+                dw *= self.mask
+            self.weight.data += dw
 
     def extra_repr(self) -> str:
         return 'in_features={}, out_features={}, bias={}, spike_in={}'.format(
