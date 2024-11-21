@@ -130,3 +130,113 @@ Dirichlet函数在0处为  :math:`+\infty` 。如果直接使用Dirichlet函数�
   snngrow_nn.Linear(512, 512, spike_in=True)
 
 更多优化算子仍在开发中，敬请期待。
+
+====================
+STDP学习
+====================
+
+Snngrow中提供了STDP(Spike Timing Dependent Plasticity)学习规则，可以用于全连接层的权重学习。
+
+STDP可以使用如下公式进行描述：
+
+.. math::
+
+  \begin{align}
+  tr_{pre}[i][t] &= tr_{pre}[i][t] -\frac{tr_{pre}[i][t-1]}{\tau_{pre}} + s[i][t]\\
+  tr_{post}[j][t] &= tr_{post}[j][t] -\frac{tr_{post}[j][t-1]}{\tau_{post}} + s[j][t]\\
+  \Delta W[i][j][t] &= F_{post}(w[i][j][t]) \cdot tr_{pre}[i][t] \cdot s[j][t] - F_{pre}(w[i][j][t]) \cdot tr_{post}[j][t] \cdot s[i][t]
+  \end{align}
+
+其中  :math:`s[i][t]`  和 :math:`s[j][t]` 是突触前神经元i和突触后神经元j在t时刻发放的脉冲（0或1），迹  :math:`tr_{pre}[i][t]` 和  :math:`tr_{post}[j][t]` 记录突触前神经元i和突触后神经元j在t时刻的脉冲发放，  :math:`\tau_{post}` 和   :math:`\tau_{post}` 是pre和post迹的时间常数，   :math:`F_{pre}` 和  :math:`F_{post}` 是控制突触权重变化量的函数。
+
+Snngrow直接对权重进行更新来实现STDP，不需要进行反向传播，也不需要额外的优化器。
+
+使用  :meth:`snngrow.base.learning.STDP`  构建一个STDP学习的全连接脉冲神经网络：
+
+.. code-block:: python
+
+  import torch
+  import torch.nn as nn
+  import snngrow.base.nn as tnn
+  from snngrow.base.neuron.IFNode import IFNode
+  from snngrow.base.surrogate import Sigmoid
+  from snngrow.base import utils
+  from snngrow.base.learning import *
+  from matplotlib import pyplot as plt
+
+  class STDP_SNN(nn.Module):
+    def __init__(self,):
+        super().__init__()
+        self.node = []
+        self.connection = []
+        self.node.append(IFNode(parallel_optim=False, T=T, spike_out=False, surrogate_function=Sigmoid.Sigmoid(spike_out=False), v_threshold=1.0))
+        self.connection.append(tnn.Linear(4, 3, spike_in=False, bias=False))
+        self.stdp = []
+        self.stdp.append(STDP(self.node[0], self.connection[0]))
+
+    def forward(self, x):
+        """
+        Calculate the forward propagation process and the training process.
+        """
+        output, dw = self.stdp[0](x)
+    
+        return output, dw
+    
+        
+    def updateweight(self, i, dw, delta):
+        """
+        :param i: the index of the connection to update
+        :type: float
+
+        :param dw: updated weights
+        :type x: torch.Tensor
+
+        Update the weight of the ith group connection according to the input dw value.
+        """
+        self.connection[i].update(dw*delta)
+        
+    def reset(self):
+        """
+        Reset neurons or intermediate quantities of learning rules.
+        """
+        for i in range(len(self.node)):
+            self.node[i].reset()
+        for i in range(len(self.stdp)):
+            self.stdp[i].reset()
+
+生成输入脉冲，初始化网络的权重为0.4，在T个时间步内进行STDP的学习，记录脉冲、迹和权值的变化：
+
+.. code-block:: python
+
+    N_in, N_out = 4, 3
+    T = 100
+    batch_size = 2
+    lr = 0.01
+
+    in_spike = (torch.rand([T, batch_size, N_in]) > 0.7).float()
+    out_spike = []
+    trace_pre = []
+    trace_post = []
+    weight = []
+
+    stdp_snn = STDP_SNN()
+    nn.init.constant_(stdp_snn.connection[0].weight.data, 0.4)
+    for t in range(T):
+        output, dw = stdp_snn(in_spike[t])
+        out_spike.append(output)
+        trace_pre.append(stdp_snn.stdp[0].trace_pre)
+        trace_post.append(stdp_snn.stdp[0].trace_post)
+        stdp_snn.updateweight(0,dw*lr,1)
+        weight.append(stdp_snn.connection[0].weight.data.clone())      
+
+    out_spike = torch.stack(out_spike)   # [T, batch_size, N_out]
+    trace_pre = torch.stack(trace_pre)   # [T, batch_size, N_in]
+    trace_post = torch.stack(trace_post) # [T, batch_size, N_out]
+    weight = torch.stack(weight)         # [T, N_out, N_in]
+
+对网络中第0个突触连接的动态进行可视化：
+
+.. image:: ../_static/test_stdp.*
+    :width: 100%
+
+完整的代码位于 ``snngrow/examples/test_stdp.py``。

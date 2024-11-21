@@ -122,7 +122,7 @@ static torch::Tensor _spike_gemm_cuda_impl(const torch::Tensor& tensor1, const t
         output_shape.push_back(t2->sizes()[1]);
 
         at::native::resize_output(out, output_shape);
-        out.zero_();
+        //out.zero_();
 
         const auto out_ = c10::MaybeOwned<at::Tensor>::borrowed(out);
         auto reshaped_out = out_->reshape({folded_dim1, t2->sizes().back()});
@@ -175,7 +175,7 @@ static torch::Tensor _spike_gemm_cuda_impl(const torch::Tensor& tensor1, const t
 
         // Resize output into the correct shape
         at::native::resize_output(out, output_shape);
-        out.zero_();
+        //out.zero_();
 
         // We then reshape the output to the expected shape and call mm/mv
         // and transpose back if necessary

@@ -26,6 +26,10 @@ SNNGrow将会带来数倍的速度提升，我们实测了矩阵乘法的速度�
 
 .. image:: _static/memory.png
 
+Snngrow中提供了STDP(Spike Timing Dependent Plasticity)学习规则，可以用于全连接层的权重学习。
+
+.. image:: _static/test_stdp.png
+
 .. toctree::
    :maxdepth: 2
    :caption: 使用说明:
@@ -44,6 +48,7 @@ SNNGrow将会带来数倍的速度提升，我们实测了矩阵乘法的速度�
 
    /apis/neurons
    /apis/surrogate
+   /apis/learning
    /apis/utils
    /apis/nn
 

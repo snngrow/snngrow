@@ -98,13 +98,21 @@ SNNGrow将会带来数倍的速度提升，我们实测了矩阵乘法的速度�
   	<img alt="memory" src="./docs/en/source/_static/memory.png" width=100%>
 </p> 
 
+## 脑启发学习算法支持
+
+Snngrow中提供了STDP(Spike Timing Dependent Plasticity)学习规则，可以用于全连接层的权重学习。
+
+<p align="center">
+  	<img alt="test_stdp" src="./docs/en/source/_static/test_stdp.png" width=100%>
+</p> 
+
 
 ## 开发计划
 
 SNNGrow仍在持续开发中：
 - [x] 深度脉冲神经网络支持
 - [x] 超低能耗稀疏脉冲神经网络计算
-- [ ] 脑启发学习算法支持
+- [x] 脑启发学习算法支持
 - [ ] 仿生结构支持
 
 ## 引用

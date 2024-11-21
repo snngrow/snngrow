@@ -135,3 +135,113 @@ For example, to define a fully connected layer:
   snngrow_nn.Linear(512, 512, spike_in=True)
 
 More optimized operators are still under development, so stay tuned.
+
+====================
+STDP Learning
+====================
+
+Snngrow provides STDP(Spike Timing Dependent Plasticity) learning rule, which can be used to learn the weights of fully connected layers.
+
+STDP can be described using the following formula:
+
+.. math::
+
+  \begin{align}
+  tr_{pre}[i][t] &= tr_{pre}[i][t] -\frac{tr_{pre}[i][t-1]}{\tau_{pre}} + s[i][t]\\
+  tr_{post}[j][t] &= tr_{post}[j][t] -\frac{tr_{post}[j][t-1]}{\tau_{post}} + s[j][t]\\
+  \Delta W[i][j][t] &= F_{post}(w[i][j][t]) \cdot tr_{pre}[i][t] \cdot s[j][t] - F_{pre}(w[i][j][t]) \cdot tr_{post}[j][t] \cdot s[i][t]
+  \end{align}
+
+Where  :math:`s[i][t]`  and :math:`s[j][t]` are the spike (0 or 1) from presynaptic neuron i and postsynaptic neuron j at time t. Trace  :math:`tr_{pre}[i][t]` and  :math:`tr_{post}[j][t]` recording the firing of presynaptic neuron i and postsynaptic neuron j at time t.  :math:`\tau_{post}` and  :math:`\tau_{post}` are the time constant of pre and post traces.  :math:`F_{pre}` and  :math:`F_{post}` are functions that control the amount of change in synaptic weights.
+
+Snngrow directly updates the weights to implement STDP without backpropagation and additional optimizers.
+
+Use  :meth:`snngrow.base.learning.STDP`  to build a fully connected spiking neural network for STDP learning:
+
+.. code-block:: python
+
+  import torch
+  import torch.nn as nn
+  import snngrow.base.nn as tnn
+  from snngrow.base.neuron.IFNode import IFNode
+  from snngrow.base.surrogate import Sigmoid
+  from snngrow.base import utils
+  from snngrow.base.learning import *
+  from matplotlib import pyplot as plt
+
+  class STDP_SNN(nn.Module):
+    def __init__(self,):
+        super().__init__()
+        self.node = []
+        self.connection = []
+        self.node.append(IFNode(parallel_optim=False, T=T, spike_out=False, surrogate_function=Sigmoid.Sigmoid(spike_out=False), v_threshold=1.0))
+        self.connection.append(tnn.Linear(4, 3, spike_in=False, bias=False))
+        self.stdp = []
+        self.stdp.append(STDP(self.node[0], self.connection[0]))
+
+    def forward(self, x):
+        """
+        Calculate the forward propagation process and the training process.
+        """
+        output, dw = self.stdp[0](x)
+    
+        return output, dw
+    
+        
+    def updateweight(self, i, dw, delta):
+        """
+        :param i: the index of the connection to update
+        :type: float
+
+        :param dw: updated weights
+        :type x: torch.Tensor
+
+        Update the weight of the ith group connection according to the input dw value.
+        """
+        self.connection[i].update(dw*delta)
+        
+    def reset(self):
+        """
+        Reset neurons or intermediate quantities of learning rules.
+        """
+        for i in range(len(self.node)):
+            self.node[i].reset()
+        for i in range(len(self.stdp)):
+            self.stdp[i].reset()
+
+Generate input spike, initialize the weight of the network to 0.4, the STDP is learned in T time steps, record the changes of the spike, trace and weight:
+
+.. code-block:: python
+
+    N_in, N_out = 4, 3
+    T = 100
+    batch_size = 2
+    lr = 0.01
+
+    in_spike = (torch.rand([T, batch_size, N_in]) > 0.7).float()
+    out_spike = []
+    trace_pre = []
+    trace_post = []
+    weight = []
+
+    stdp_snn = STDP_SNN()
+    nn.init.constant_(stdp_snn.connection[0].weight.data, 0.4)
+    for t in range(T):
+        output, dw = stdp_snn(in_spike[t])
+        out_spike.append(output)
+        trace_pre.append(stdp_snn.stdp[0].trace_pre)
+        trace_post.append(stdp_snn.stdp[0].trace_post)
+        stdp_snn.updateweight(0,dw*lr,1)
+        weight.append(stdp_snn.connection[0].weight.data.clone())      
+
+    out_spike = torch.stack(out_spike)   # [T, batch_size, N_out]
+    trace_pre = torch.stack(trace_pre)   # [T, batch_size, N_in]
+    trace_post = torch.stack(trace_post) # [T, batch_size, N_out]
+    weight = torch.stack(weight)         # [T, N_out, N_in]
+
+Visualize the dynamics of the first synaptic connection in the network:
+
+.. image:: ../_static/test_stdp.*
+    :width: 100%
+
+The complete code is in ``snngrow/examples/test_stdp.py``.
