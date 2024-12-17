@@ -30,6 +30,8 @@ Snngrow中提供了STDP(Spike Timing Dependent Plasticity)学习规则，可以�
 
 .. image:: _static/test_stdp.png
 
+Snngrow中提供了稀疏突触的连接方式，可以用于构建稀疏结构。
+
 .. toctree::
    :maxdepth: 2
    :caption: 使用说明:

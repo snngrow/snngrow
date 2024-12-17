@@ -106,6 +106,31 @@ Snngrow中提供了STDP(Spike Timing Dependent Plasticity)学习规则，可以�
   	<img alt="test_stdp" src="./docs/en/source/_static/test_stdp.png" width=100%>
 </p> 
 
+## 仿生结构支持
+
+Snngrow中提供了稀疏突触的连接方式，可以用于构建稀疏结构。
+```
+如果使用稀疏突触连接，构建网络的例子如下：
+```
+import torch
+import torch.nn as nn
+from snngrow.base.neuron.LIFNode import LIFNode
+from snngrow.base.nn.modules import SparseSynapse
+class SparseNet(nn.Module):
+    def __init__(self, T):
+        super(SparseNet, self).__init__()
+        self.T = T
+        self.classifier = nn.Sequential(
+            nn.Conv2d(1, 32, kernel_size=3),
+            LIFNode(parallel_optim=False, T=T, spike_out=False),
+            nn.MaxPool2d(kernel_size=1),
+            nn.Conv2d(32, 64, kernel_size=3),
+            LIFNode(parallel_optim=False, T=T, spike_out=False),
+            nn.Flatten(),
+            SparseSynapse(36864, 128, connection="random"),
+            SparseSynapse(128, 10, connection="random"),
+        )
+```
 
 ## 开发计划
 
@@ -113,7 +138,7 @@ SNNGrow仍在持续开发中：
 - [x] 深度脉冲神经网络支持
 - [x] 超低能耗稀疏脉冲神经网络计算
 - [x] 脑启发学习算法支持
-- [ ] 仿生结构支持
+- [x] 仿生结构支持
 
 ## 引用
 
