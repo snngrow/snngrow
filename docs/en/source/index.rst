@@ -30,6 +30,8 @@ Snngrow provides STDP(Spike Timing Dependent Plasticity) learning rule, which ca
 
 .. image:: _static/test_stdp.png
 
+Snngrow provides connection mode of sparse synapses, which can be used to build sparse structures.
+
 .. toctree::
    :maxdepth: 2
    :caption: USAGE:

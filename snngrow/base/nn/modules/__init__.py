@@ -14,3 +14,4 @@
 
 from .norm import BatchNorm2d, LayerNorm
 from .linear import Linear
+from .sparse_synapse import SparseSynapse

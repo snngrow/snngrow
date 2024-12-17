@@ -109,13 +109,40 @@ Snngrow provides STDP(Spike Timing Dependent Plasticity) learning rule, which ca
   	<img alt="test_stdp" src="./docs/en/source/_static/test_stdp.png" width=100%>
 </p> 
 
+## Bionic neural network sparse structure support
+
+Snngrow provides connection mode of sparse synapses, which can be used to build sparse structures.
+
+```
+An example of building a network using sparse synaptic connections:
+```
+import torch
+import torch.nn as nn
+from snngrow.base.neuron.LIFNode import LIFNode
+from snngrow.base.nn.modules import SparseSynapse
+class SparseNet(nn.Module):
+    def __init__(self, T):
+        super(SparseNet, self).__init__()
+        self.T = T
+        self.classifier = nn.Sequential(
+            nn.Conv2d(1, 32, kernel_size=3),
+            LIFNode(parallel_optim=False, T=T, spike_out=False),
+            nn.MaxPool2d(kernel_size=1),
+            nn.Conv2d(32, 64, kernel_size=3),
+            LIFNode(parallel_optim=False, T=T, spike_out=False),
+            nn.Flatten(),
+            SparseSynapse(36864, 128, connection="random"),
+            SparseSynapse(128, 10, connection="random"),
+        )
+```
+
 ## Development plans
 
 SNNGrow is still under active development:
 - [x] Large-scale deep spiking neural network training and inference
 - [x] Ultra-low energy consumption sparse spiking neural network computing
 - [x] Brain-inspired learning algorithm support
-- [ ] Bionic neural network sparse structure support
+- [x] Bionic neural network sparse structure support
 
 ## Cite
 

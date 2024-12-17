@@ -245,3 +245,53 @@ Visualize the dynamics of the first synaptic connection in the network:
     :width: 100%
 
 The complete code is in ``snngrow/examples/test_stdp.py``.
+
+====================
+Sparse Structure
+====================
+
+Snngrow provides connection mode of sparse synapses, which can be used to build sparse structures.
+
+Use  :meth:`snngrow.base.nn.modules.sparse_synapse`  to build a spiking neural network using sparse synaptic connections:
+
+.. code-block:: python
+
+  import torch
+  import torch.nn as nn
+  import torch.optim as optim
+  import torchvision
+  import torchvision.transforms as transforms
+  import os
+  import sys
+  sys.path.append(os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))))
+  from snngrow.base.neuron.LIFNode import LIFNode
+  from snngrow.base import utils
+  from snngrow.base.nn.modules import SparseSynapse
+  from tqdm import tqdm
+
+  # Define the CSNN model
+  class CNN(nn.Module):
+      def __init__(self, T):
+          super(CNN, self).__init__()
+          self.T = T
+          self.csnn = nn.Sequential(
+              nn.Conv2d(1, 32, kernel_size=3),
+              LIFNode(parallel_optim=False, T=T, spike_out=False),
+              nn.MaxPool2d(kernel_size=1),
+              nn.Conv2d(32, 64, kernel_size=3),
+              LIFNode(parallel_optim=False, T=T, spike_out=False),
+              nn.Flatten(),
+              SparseSynapse(36864, 128, connection="random"),
+              SparseSynapse(128, 10, connection="random"),
+          )
+
+
+      def forward(self, x):
+          # # don't use parallel acceleration
+          x_seq = []
+          for _ in range(self.T):
+              x_seq.append(self.csnn(x))
+          out = torch.stack(x_seq).mean(0)
+          return out
+
+The complete code is in ``snngrow/examples/test_sparse_synapse.py``。
