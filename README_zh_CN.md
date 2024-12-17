@@ -109,7 +109,6 @@ Snngrow中提供了STDP(Spike Timing Dependent Plasticity)学习规则，可以�
 ## 仿生结构支持
 
 Snngrow中提供了稀疏突触的连接方式，可以用于构建稀疏结构。
-```
 如果使用稀疏突触连接，构建网络的例子如下：
 ```
 import torch
