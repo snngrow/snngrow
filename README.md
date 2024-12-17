@@ -112,8 +112,6 @@ Snngrow provides STDP(Spike Timing Dependent Plasticity) learning rule, which ca
 ## Bionic neural network sparse structure support
 
 Snngrow provides connection mode of sparse synapses, which can be used to build sparse structures.
-
-```
 An example of building a network using sparse synaptic connections:
 ```
 import torch
