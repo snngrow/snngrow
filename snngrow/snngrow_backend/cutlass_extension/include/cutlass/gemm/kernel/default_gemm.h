@@ -976,12 +976,6 @@ struct DefaultGemm<ElementA,
       ThreadblockShape, WarpShape, GemmShape<1, 1, 1>, Stages,
       Operator, false, SharedMemoryClear, GatherA, GatherB,
       PermuteALayout, PermuteBLayout>::ThreadblockMma;
-  using Mmaidenter = typename cutlass::gemm::threadblock::DefaultMma<
-      ElementA, LayoutA, kAlignmentA, ElementB, LayoutB, kAlignmentB,
-      ElementAccumulator, LayoutC, arch::OpClassSimt, arch::Sm80,
-      ThreadblockShape, WarpShape, GemmShape<1, 1, 1>, Stages,
-      Operator, false, SharedMemoryClear, GatherA, GatherB,
-      PermuteALayout, PermuteBLayout>;
 
   static int const kEpilogueElementsPerAccess = EpilogueOutputOp::kCount;
   static_assert(kEpilogueElementsPerAccess == 1, "simt epilogue must operate on scalars");
@@ -1010,10 +1004,6 @@ struct DefaultGemm<ElementA,
 
   /// Define the kernel-level GEMM operator.
   using GemmKernel = kernel::Gemm<Mma, Epilogue, ThreadblockSwizzle, SplitKSerial>; 
-  void identity() {
-    Mmaidenter test;
-    test.identity();
-  }
 };
 
 ////////////////////////////////////////////////////////////////////////////////
