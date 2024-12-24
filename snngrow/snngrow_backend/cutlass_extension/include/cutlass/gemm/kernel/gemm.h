@@ -201,6 +201,7 @@ struct Gemm {
   /// Executes one GEMM
   CUTLASS_DEVICE
   void operator()(Params const &params, SharedStorage &shared_storage) {
+
     // Compute threadblock location
     ThreadblockSwizzle threadblock_swizzle;
 

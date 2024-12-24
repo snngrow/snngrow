@@ -183,10 +183,6 @@ struct DefaultMma<ElementA, LayoutA, kAlignmentA, ElementB, LayoutB,
       typename MmaCore::Shape, IteratorA, typename MmaCore::SmemIteratorA,
       IteratorB, typename MmaCore::SmemIteratorB, ElementAccumulator,
       LayoutC, typename MmaCore::MmaPolicy>;
-  void identity() {
-    MmaCore a;
-    std::cout<<a.identity<<std::endl;
-  }
 };
 
 ////////////////////////////////////////////////////////////////////////////////

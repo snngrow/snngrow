@@ -29,8 +29,15 @@
  *
  **************************************************************************************************/
 
-/*! \file
+/*! \file snngrow/snngrow_backend/spikegemm/gemm/kernel/gemm_spike_kernel.h
     \brief Template for a pipelined GEMM kernel. Does not compute batching or support split-K.
+    *
+    * Copyright (c) 2024 Beijing Institute of Technology AETAS Lab. and Utarn Technology Co., Ltd.  All rights reserved.
+    *
+    * Unless required by applicable law or agreed to in writing,
+    * software distributed under the License is distributed on an
+    * "AS IS" BASIS, WITHOUT ARRANTIES OR CONDITIONS OF ANY KIND, either express or
+    * implied.
 */
 
 #pragma once

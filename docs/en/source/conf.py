@@ -14,7 +14,7 @@ import sphinx_rtd_theme
 from recommonmark.parser import CommonMarkParser
 
 project = 'snngrow'
-copyright = '2024, Utarn Technology Co., Ltd.'
+copyright = '2024, Beijing Institute of Technology AETAS Lab. and Utarn Technology Co., Ltd. '
 author = 'Lei Yunlin, Gao Lanyu, Yang Xu'
 release = '1.0.0'
 
