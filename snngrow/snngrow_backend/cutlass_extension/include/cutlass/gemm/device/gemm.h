@@ -288,33 +288,6 @@ class Gemm {
     PermuteDLayout
   >::GemmKernel;
 
-  using GemmKernelidentier = typename kernel::DefaultGemm<
-    ElementA,
-    LayoutA,
-    kAlignmentA,
-    ElementB,
-    LayoutB,
-    kAlignmentB,
-    ElementC,
-    LayoutC,
-    ElementAccumulator,
-    OperatorClass,
-    ArchTag,
-    ThreadblockShape,
-    WarpShape,
-    InstructionShape,
-    EpilogueOutputOp,
-    ThreadblockSwizzle,
-    kStages,
-    kSplitKSerial,
-    Operator,
-    SharedMemoryClearOption::kNone,
-    GatherA,
-    GatherB,
-    ScatterD,
-    PermuteDLayout
-  >;
-
   /// Argument structure
   struct Arguments {
 
@@ -499,8 +472,6 @@ public:
   /// Runs the kernel using initialized state.
   Status run(cudaStream_t stream = nullptr) {
 
-    GemmKernelidentier identitier;
-    identitier.identity();
     ThreadblockSwizzle threadblock_swizzle;
 
     dim3 grid = threadblock_swizzle.get_grid_shape(params_.grid_tiled_shape);

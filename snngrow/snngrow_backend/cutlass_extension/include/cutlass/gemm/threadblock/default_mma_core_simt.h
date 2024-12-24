@@ -567,7 +567,6 @@ struct DefaultMmaCore<Shape_, WarpShape_, GemmShape<1, 1, 1>, ElementA_,
     MatrixShape<0, 0>,
     WarpCount::kK
   >;
-  static const int identity = 2;
 };
 
 /////////////////////////////////////////////////////////////////////////////////////////////////
