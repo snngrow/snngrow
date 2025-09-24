@@ -19,6 +19,10 @@
 #include <torch/serialize/tensor.h>
 
 #include "torch_gemm/spike_gemm_cuda.h"
+#include "torch_gemm/scalar_mul_cuda.h"
+
+// Forward declaration for Python wrapper
+at::Tensor scalar_mul_python(pybind11::object arg1, pybind11::object arg2);
 
 /**
  * @brief Pybind11 module for the CUDA backend.
@@ -27,5 +31,7 @@
 */
 PYBIND11_MODULE(snngrow_backend, m) {
   m.def("spike_gemm_cuda", &spike_gemm_cuda, "Bool Spike Matrix Multiplication GEMM CUDA");
-  
+  m.def("scalar_mul_cuda", &scalar_mul_python, "Bool Spike Matrix Scalar Multiplication CUDA");
 }
+
+

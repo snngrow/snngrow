@@ -13,3 +13,4 @@
 # limitations under the License.
 
 from .linear import linear
+from .scalar import scalar_multiply

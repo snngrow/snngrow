@@ -155,4 +155,4 @@ dmypy.json
 # event data
 *.bin
 *.dat
-*.pt
+*.pt.vscode/

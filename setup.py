@@ -25,7 +25,7 @@ from torch.__config__ import parallel_info
 # version
 here = os.path.abspath(os.path.dirname(__file__))
 with open(os.path.join(here, 'snngrow', '__init__.py'), 'r') as f:
-  init_py = f.read()
+    init_py = f.read()
 version = re.search('__version__ = "(.*)"', init_py).groups()[0]
 
 # requirements
@@ -84,13 +84,13 @@ else:
 if sys.platform == 'darwin':
     extra_compile_args['cxx'] += ['-D_LIBCPP_DISABLE_AVAILABILITY']
     if platform.machine == 'arm64':
-       extra_compile_args['cxx'] += ['-arch', 'arm64']
+        extra_compile_args['cxx'] += ['-arch', 'arm64']
 
 setup(
     name="snngrow",
     version=version,
     author="AETAS",
-    author_email="leiyunlin@bit.edu.cn, gaolanyu@bit.edu.cn",
+    author_email="leiyunlin@bit.edu.cn, gaolanyu@bit.edu.cn, zhangyu54@bit.edu.cn",
     description="Third-generation Artificial Intelligence SNN Universal Implementation",
     long_description=long_description,
     long_description_content_type="text/markdown",
